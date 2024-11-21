@@ -30,10 +30,11 @@ impl FromStr for Sides {
         let sides = match s
             .split("x")
             .map(|s| s.parse())
-            .collect::<Result<Vec<_>, ParseIntError>>() {
-                Ok(s) => Ok(s),
-                Err(_) => Err(SidesParseErr),
-            }?;
+            .collect::<Result<Vec<_>, ParseIntError>>()
+        {
+            Ok(s) => Ok(s),
+            Err(_) => Err(SidesParseErr),
+        }?;
         if sides.len() != 3 {
             return Err(SidesParseErr);
         }
