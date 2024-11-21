@@ -1,3 +1,5 @@
+use std::{num::ParseIntError, str::FromStr};
+
 pub struct Sides {
     length: u32,
     width: u32,
@@ -15,6 +17,32 @@ impl Sides {
         let area =
             2 * (self.length * self.width + self.length * self.height + self.width * self.height);
         area + self.smallest_side()
+    }
+}
+
+#[derive(Debug)]
+pub struct SidesParseErr;
+
+impl FromStr for Sides {
+    type Err = SidesParseErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parsed = s
+            .split("x")
+            .map(|s| s.parse())
+            .collect::<Result<Vec<_>, ParseIntError>>();
+        if let Err(_) = parsed {
+            return Err(SidesParseErr);
+        }
+        let sides = parsed.unwrap();
+        if sides.len() != 3 {
+            return Err(SidesParseErr);
+        }
+        Ok(Sides {
+            length: sides[0],
+            width: sides[1],
+            height: sides[2],
+        })
     }
 }
 
@@ -39,6 +67,12 @@ mod tests {
             width: 17,
             height: 15,
         };
+        assert_eq!(sides.needed_paper(), 1458);
+    }
+
+    #[test]
+    fn sides_from_str_test_1() {
+        let sides: Sides = "12x17x15".parse().unwrap();
         assert_eq!(sides.needed_paper(), 1458);
     }
 }
