@@ -27,14 +27,13 @@ impl FromStr for Sides {
     type Err = SidesParseErr;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = s
+        let sides = match s
             .split("x")
             .map(|s| s.parse())
-            .collect::<Result<Vec<_>, ParseIntError>>();
-        if let Err(_) = parsed {
-            return Err(SidesParseErr);
-        }
-        let sides = parsed.unwrap();
+            .collect::<Result<Vec<_>, ParseIntError>>() {
+                Ok(s) => Ok(s),
+                Err(_) => Err(SidesParseErr),
+            }?;
         if sides.len() != 3 {
             return Err(SidesParseErr);
         }
