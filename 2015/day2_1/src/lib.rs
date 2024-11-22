@@ -8,7 +8,7 @@ pub struct Sides {
 
 impl Sides {
     pub fn smallest_side(&self) -> (u32, u32) {
-        let mut sides = vec![self.length, self.width, self.height];
+        let mut sides = [self.length, self.width, self.height];
         sides.sort();
         (sides[0], sides[1])
     }
