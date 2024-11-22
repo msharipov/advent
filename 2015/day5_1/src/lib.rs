@@ -25,6 +25,10 @@ fn no_naughty_substrings(s: &str) -> bool {
     true
 }
 
+pub fn is_nice(s: &str) -> bool {
+    contains_enough_vowels(s) && contains_double_letter(s) && no_naughty_substrings(s)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
