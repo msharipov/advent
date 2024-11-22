@@ -8,7 +8,7 @@ pub enum Move {
     Left,
 }
 
-fn parse_moves(s: &str) -> Vec<Move> {
+pub fn parse_moves(s: &str) -> Vec<Move> {
     s.chars()
         .filter_map(|c| match c {
             '^' => Some(Move::Up),
@@ -30,7 +30,7 @@ fn next_pos(current: (i64, i64), dir: &Move) -> (i64, i64) {
     }
 }
 
-fn count_distinct_houses(moves: &[Move]) -> usize {
+pub fn count_distinct_houses(moves: &[Move]) -> usize {
     let mut visited = HashSet::new();
     let mut pos = (0i64, 0i64);
     visited.insert(pos);
