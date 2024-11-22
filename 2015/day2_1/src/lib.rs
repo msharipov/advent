@@ -7,16 +7,17 @@ pub struct Sides {
 }
 
 impl Sides {
-    pub fn smallest_side(&self) -> u32 {
+    pub fn smallest_side(&self) -> (u32, u32) {
         let mut sides = vec![self.length, self.width, self.height];
         sides.sort();
-        sides[0] * sides[1]
+        (sides[0], sides[1])
     }
 
     pub fn needed_paper(&self) -> u32 {
         let area =
             2 * (self.length * self.width + self.length * self.height + self.width * self.height);
-        area + self.smallest_side()
+        let smallest = self.smallest_side();
+        area + smallest.0 * smallest.1
     }
 }
 
@@ -57,7 +58,7 @@ mod tests {
             width: 17,
             height: 15,
         };
-        assert_eq!(sides.smallest_side(), 180);
+        assert_eq!(sides.smallest_side(), (12, 15));
     }
 
     #[test]
