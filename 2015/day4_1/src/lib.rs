@@ -1,5 +1,3 @@
-use md5;
-
 fn starts_with_5_zeros(key: &str, suffix: u64) -> bool {
     let mut combined = key.to_owned();
     combined.push_str(&suffix.to_string());
