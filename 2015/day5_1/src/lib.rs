@@ -1,11 +1,6 @@
 fn contains_enough_vowels(s: &str) -> bool {
-    let mut vowel_count = 0;
     const VOWELS: &str = "aoeiu";
-    for c in s.chars() {
-        if VOWELS.contains(c) {
-            vowel_count += 1;
-        }
-    }
+    let vowel_count = s.chars().filter(|&c| VOWELS.contains(c)).count();
     vowel_count >= 3
 }
 
