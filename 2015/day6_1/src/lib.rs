@@ -21,7 +21,7 @@ enum GridAction {
 }
 
 #[derive(Debug, PartialEq)]
-struct Grid {
+pub struct Grid {
     values: Box<[bool; Grid::GRID_SIZE * Grid::GRID_SIZE]>,
 }
 
@@ -52,6 +52,18 @@ impl Grid {
             }
         }
         self
+    }
+
+    pub fn from_commands(commands: &[&str]) -> Result<Self, &'static str> {
+        let mut grid = Grid::new();
+        for command in commands {
+            grid.apply(parse_action(command)?);
+        }
+        Ok(grid)
+    }
+
+    pub fn count_values(&self, kind: bool) -> usize {
+        self.values.iter().filter(|&&x| x == kind).count()
     }
 }
 
