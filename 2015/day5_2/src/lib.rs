@@ -1,7 +1,13 @@
 fn contains_double_pair(s: &str) -> bool {
-    let mut pairs = s.chars().zip(s.chars().skip(1));
-    let mut other_pairs = pairs.clone().skip(2);
-    pairs.any(|pair| other_pairs.any(|other| other == pair))
+    let pairs = s.chars().zip(s.chars().skip(1));
+    let first_pairs = pairs.clone();
+    for (i, pair) in first_pairs.enumerate() {
+        let mut other_pairs = pairs.clone().skip(i + 2);
+        if other_pairs.any(|other| other == pair) {
+            return true;
+        }
+    }
+    false
 }
 
 fn contains_sandwich(s: &str) -> bool {
@@ -20,12 +26,12 @@ mod tests {
 
     #[test]
     fn contains_double_pair_test_1() {
-        assert!(contains_double_pair("dofhgbinsiotfhun"));
+        assert!(contains_double_pair("abxab"));
     }
 
     #[test]
     fn contains_double_pair_test_2() {
-        assert!(!contains_double_pair("aaaunotgbwrtuvnb"));
+        assert!(!contains_double_pair("svaaaunotgbwrtuvnb"));
     }
 
     #[test]
