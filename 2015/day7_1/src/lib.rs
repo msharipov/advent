@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 enum Wire {
-    Const(u16),
     Copy(String),
     Not(String),
     And(String, String),
@@ -16,8 +15,12 @@ pub struct Circuit {
 }
 
 impl Circuit {
-    fn new(s: &[&str]) -> Result<Circuit, &'static str> {
-        Err("fail")
+    pub fn new(s: &[&str]) -> Result<Circuit, &'static str> {
+        let mut cir = Self::default();
+        for wire in s {
+            cir.add_wire(wire)?;
+        }
+        Ok(cir)
     }
 
     pub fn add_wire(&mut self, s: &str) -> Result<(), &'static str> {
@@ -25,10 +28,7 @@ impl Circuit {
         let tokens: Vec<_> = s.split(' ').collect();
         if tokens.len() == 3 {
             let name = tokens[2].to_owned();
-            match tokens[0].parse::<u16>() {
-                Ok(val) => self.state.insert(name, Const(val)),
-                Err(_) => self.state.insert(name, Copy(tokens[0].to_owned())),
-            };
+            self.state.insert(name, Copy(tokens[0].to_owned()));
             return Ok(());
         }
         if tokens.len() == 4 && tokens[0] == "NOT" {
@@ -68,38 +68,52 @@ impl Circuit {
         Err("invalid command")
     }
 
-    pub fn eval(&self, name: &str) -> Result<u16, &'static str> {
+    pub fn eval(&self, name: &str) -> Result<u16, String> {
+        let mut table: HashMap<String, u16> = HashMap::new();
+        self.eval_with_table(name, &mut table)
+    }
+
+    fn eval_with_table(&self, name: &str, table: &mut HashMap<String, u16>) -> Result<u16, String> {
         use Wire::*;
+        if let Ok(c) = name.parse::<u16>() {
+            return Ok(c);
+        }
+        if let Some(&c) = table.get(name) {
+            return Ok(c);
+        }
         let wire = match self.state.get(name) {
             Some(w) => Ok(w),
-            None => Err("wire does not exist"),
+            None => Err(format!("wire does not exist: {name}")),
         }?;
-        match wire {
-            Const(c) => Ok(*c),
-            Copy(w) => self.eval(w),
-            Not(w) => match self.eval(w) {
+        let result = match wire {
+            Copy(w) => self.eval_with_table(w, table),
+            Not(w) => match self.eval_with_table(w, table) {
                 Ok(c) => Ok(!c),
                 Err(e) => Err(e),
             },
             And(w1, w2) => {
-                let c1 = self.eval(w1)?;
-                let c2 = self.eval(w2)?;
+                let c1 = self.eval_with_table(w1, table)?;
+                let c2 = self.eval_with_table(w2, table)?;
                 Ok(c1 & c2)
             }
             Or(w1, w2) => {
-                let c1 = self.eval(w1)?;
-                let c2 = self.eval(w2)?;
+                let c1 = self.eval_with_table(w1, table)?;
+                let c2 = self.eval_with_table(w2, table)?;
                 Ok(c1 | c2)
             }
             RShift(w, sh) => {
-                let c = self.eval(w)?;
+                let c = self.eval_with_table(w, table)?;
                 Ok(c >> sh)
             }
             LShift(w, sh) => {
-                let c = self.eval(w)?;
+                let c = self.eval_with_table(w, table)?;
                 Ok(c << sh)
             }
+        };
+        if let Ok(r) = result {
+            table.insert(name.to_owned(), r);
         }
+        result
     }
 }
 
@@ -122,6 +136,13 @@ mod tests {
         cir.add_wire("255 -> a").unwrap();
         cir.add_wire("a LSHIFT 8 -> b").unwrap();
         cir.add_wire("NOT b -> c").unwrap();
+        assert_eq!(Ok(255), cir.eval("c"));
+    }
+
+    #[test]
+    fn circuit_new_test_1() {
+        let wires = ["255 -> a", "a LSHIFT 8 -> b", "NOT b -> c"];
+        let cir = Circuit::new(&wires).unwrap();
         assert_eq!(Ok(255), cir.eval("c"));
     }
 }
