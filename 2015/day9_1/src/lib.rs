@@ -1,9 +1,9 @@
+use itertools::Itertools;
+use sscanf::sscanf;
 use std::{
     cmp::{max, min},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
 };
-
-use sscanf::sscanf;
 
 #[derive(Debug, PartialEq)]
 struct Distance {
@@ -15,6 +15,7 @@ struct Distance {
 #[derive(Debug, Default)]
 struct GPS {
     map: HashMap<(String, String), u64>,
+    points: HashSet<String>,
 }
 
 impl Distance {
@@ -47,6 +48,8 @@ impl GPS {
         } else {
             self.map.insert((b.to_owned(), a.to_owned()), *separation);
         }
+        self.points.insert(a.to_owned());
+        self.points.insert(b.to_owned());
     }
 
     pub fn new(distances: &[&str]) -> Result<Self, &'static str> {
@@ -66,6 +69,23 @@ impl GPS {
             max(points.0, points.1).to_owned(),
         ))
     }
+
+    pub fn path_length(&self, locations: &[&str]) -> Option<u64> {
+        let legs = locations.iter().zip(locations.iter().skip(1));
+        let mut total = 0;
+        for leg in legs {
+            let leg_length = self.get((*leg.0, *leg.1))?;
+            total += leg_length;
+        }
+        Some(total)
+    }
+
+    // pub fn shortest_tour(&self) -> Option<u64> {
+    //     let paths = self.points.iter().permutations(self.points.len());
+    //     for path in paths {
+    //     }
+    //     None
+    // }
 }
 
 #[cfg(test)]
@@ -102,5 +122,14 @@ mod tests {
     fn gps_get_test_2() {
         let gps = GPS::new(&["Springfield to Chicago = 202", "Detroit to Chicago = 383"]).unwrap();
         assert_eq!(gps.get(("Springfield", "Detroit")), None);
+    }
+
+    #[test]
+    fn path_length_test_1() {
+        let gps = GPS::new(&["Springfield to Chicago = 202", "Detroit to Chicago = 383"]).unwrap();
+        assert_eq!(
+            gps.path_length(&["Springfield", "Chicago", "Detroit"]),
+            Some(585)
+        );
     }
 }
