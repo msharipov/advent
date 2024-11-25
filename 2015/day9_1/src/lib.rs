@@ -13,7 +13,7 @@ struct Distance {
 }
 
 #[derive(Debug, Default)]
-struct GPS {
+pub struct GPS {
     map: HashMap<(String, String), u64>,
     points: HashSet<String>,
 }
