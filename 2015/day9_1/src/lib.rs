@@ -63,29 +63,27 @@ impl GPS {
         Ok(gps)
     }
 
-    pub fn get(&self, points: (&str, &str)) -> Option<&u64> {
+    pub fn get<T: AsRef<str>>(&self, points: (T, T)) -> Option<&u64> {
         self.map.get(&(
-            min(points.0, points.1).to_owned(),
-            max(points.0, points.1).to_owned(),
+            min(points.0.as_ref(), points.1.as_ref()).to_owned(),
+            max(points.0.as_ref(), points.1.as_ref()).to_owned(),
         ))
     }
 
-    pub fn path_length(&self, locations: &[&str]) -> Option<u64> {
+    pub fn path_length<T: AsRef<str>>(&self, locations: &[T]) -> Option<u64> {
         let legs = locations.iter().zip(locations.iter().skip(1));
         let mut total = 0;
         for leg in legs {
-            let leg_length = self.get((*leg.0, *leg.1))?;
+            let leg_length = self.get(leg)?;
             total += leg_length;
         }
         Some(total)
     }
 
-    // pub fn shortest_tour(&self) -> Option<u64> {
-    //     let paths = self.points.iter().permutations(self.points.len());
-    //     for path in paths {
-    //     }
-    //     None
-    // }
+    pub fn shortest_tour(&self) -> Option<u64> {
+        let paths = self.points.iter().permutations(self.points.len());
+        paths.filter_map(|p| self.path_length(&p)).min()
+    }
 }
 
 #[cfg(test)]
@@ -131,5 +129,17 @@ mod tests {
             gps.path_length(&["Springfield", "Chicago", "Detroit"]),
             Some(585)
         );
+    }
+
+    #[test]
+    fn shortest_tour_test_1() {
+        let gps = GPS::new(&[
+            "Springfield to Chicago = 202",
+            "Detroit to Chicago = 383",
+            "Springfield to Columbus = 389",
+            "Columbus to Detroit = 203",
+        ])
+        .unwrap();
+        assert_eq!(gps.shortest_tour(), Some(788));
     }
 }
