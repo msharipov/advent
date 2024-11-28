@@ -31,6 +31,10 @@ fn contains_double_pair(s: &str) -> bool {
     false
 }
 
+fn doesnt_contain_iol(s: &str) -> bool {
+    !s.chars().any(|c| c == 'i' || c == 'o' || c == 'l')
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,5 +52,15 @@ mod tests {
     #[test]
     fn contains_double_pair_test_2() {
         assert!(!contains_double_pair("svaaaunotgbwrtuvnb"));
+    }
+
+    #[test]
+    fn doesnt_contain_iol_test_1() {
+        assert!(doesnt_contain_iol("abcdefghjkmnpqrstuvwxyz"));
+    }
+
+    #[test]
+    fn doesnt_contain_iol_test_2() {
+        assert!(!doesnt_contain_iol("diofvnboer"));
     }
 }
