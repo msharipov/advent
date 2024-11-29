@@ -20,11 +20,14 @@ fn increment_password(pass: &str) -> String {
 }
 
 fn contains_double_pair(s: &str) -> bool {
-    let pairs = s.chars().zip(s.chars().skip(1));
-    let first_pairs = pairs.clone();
-    for (i, pair) in first_pairs.enumerate() {
+    let chars = s.chars().collect::<Vec<_>>();
+    let pairs = chars.windows(2);
+    for (i, pair) in pairs.clone().enumerate() {
+        if pair[0] != pair[1] {
+            continue
+        }
         let mut other_pairs = pairs.clone().skip(i + 2);
-        if other_pairs.any(|other| other == pair) {
+        if other_pairs.any(|other| other[0] == other[1]) {
             return true;
         }
     }
@@ -42,6 +45,19 @@ fn contains_increasing_triple(s: &str) -> bool {
         .any(|w| w[1] == (w[0] + 1) && w[2] == (w[1] + 1))
 }
 
+pub fn next_password(s: &str) -> String {
+    let mut pass = s.to_owned();
+    loop {
+        pass = increment_password(&pass);
+        if contains_double_pair(&pass)
+            && doesnt_contain_iol(&pass)
+            && contains_increasing_triple(&pass)
+        {
+            return pass
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,12 +69,12 @@ mod tests {
 
     #[test]
     fn contains_double_pair_test_1() {
-        assert!(contains_double_pair("abxab"));
+        assert!(contains_double_pair("qvvtneqasddnq"));
     }
 
     #[test]
     fn contains_double_pair_test_2() {
-        assert!(!contains_double_pair("svaaaunotgbwrtuvnb"));
+        assert!(!contains_double_pair("svaaaunotubwrtuvnb"));
     }
 
     #[test]
@@ -73,11 +89,16 @@ mod tests {
 
     #[test]
     fn contains_increasing_triple_test_1() {
-        assert!(contains_increasing_triple("dnbufgnefgww"))
+        assert!(contains_increasing_triple("dnbufgnefgww"));
     }
 
     #[test]
     fn contains_increasing_triple_test_2() {
-        assert!(!contains_increasing_triple("vnierbnvcvdfv"))
+        assert!(!contains_increasing_triple("vnierbnvcvdfv"));
+    }
+
+    #[test]
+    fn next_password_test_1() {
+        assert_eq!(next_password("rtvvtbqqrrc"), "rtvvtbqqrsa");
     }
 }
