@@ -24,7 +24,7 @@ fn contains_double_pair(s: &str) -> bool {
     let pairs = chars.windows(2);
     for (i, pair) in pairs.clone().enumerate() {
         if pair[0] != pair[1] {
-            continue
+            continue;
         }
         let mut other_pairs = pairs.clone().skip(i + 2);
         if other_pairs.any(|other| other[0] == other[1]) {
@@ -53,7 +53,7 @@ pub fn next_password(s: &str) -> String {
             && doesnt_contain_iol(&pass)
             && contains_increasing_triple(&pass)
         {
-            return pass
+            return pass;
         }
     }
 }
