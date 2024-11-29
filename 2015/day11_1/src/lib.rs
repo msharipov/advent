@@ -35,6 +35,13 @@ fn doesnt_contain_iol(s: &str) -> bool {
     !s.chars().any(|c| c == 'i' || c == 'o' || c == 'l')
 }
 
+fn contains_increasing_triple(s: &str) -> bool {
+    s.bytes()
+        .collect::<Vec<_>>()
+        .windows(3)
+        .any(|w| w[1] == (w[0] + 1) && w[2] == (w[1] + 1))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -62,5 +69,15 @@ mod tests {
     #[test]
     fn doesnt_contain_iol_test_2() {
         assert!(!doesnt_contain_iol("diofvnboer"));
+    }
+
+    #[test]
+    fn contains_increasing_triple_test_1() {
+        assert!(contains_increasing_triple("dnbufgnefgww"))
+    }
+
+    #[test]
+    fn contains_increasing_triple_test_2() {
+        assert!(!contains_increasing_triple("vnierbnvcvdfv"))
     }
 }
