@@ -1,8 +1,10 @@
 use sscanf::sscanf;
 use std::collections::HashMap;
 
-pub fn parse_preferences(lines: &[&str]) -> Result<HashMap<(String, String), i32>, sscanf::Error> {
-    let mut prefs = HashMap::new();
+type Preferences = HashMap<(String, String), i32>;
+
+pub fn parse_preferences(lines: &[&str]) -> Result<Preferences, sscanf::Error> {
+    let mut prefs = Preferences::new();
     for line in lines {
         let parsed = sscanf!(
             line,
@@ -32,7 +34,7 @@ mod tests {
             "Carol would gain 45 happiness units by sitting next to Bob.",
             "Carol would gain 37 happiness units by sitting next to Alice.",
         ];
-        let mut correct = HashMap::new();
+        let mut correct = Preferences::new();
         correct.insert(("Alice".to_string(), "Bob".to_string()), -57);
         correct.insert(("Alice".to_string(), "Carol".to_string()), -62);
         correct.insert(("Bob".to_string(), "Alice".to_string()), -14);
