@@ -3,7 +3,13 @@ use serde_json::Value;
 pub fn count_numbers(json: &Value) -> Option<i64> {
     match json {
         Value::Array(vec) => Some(vec.iter().filter_map(|v| count_numbers(v)).sum()),
-        Value::Object(map) => Some(map.values().filter_map(|v| count_numbers(v)).sum()),
+        Value::Object(map) => {
+            if has_red(json) {
+                Some(0)
+            } else {
+                Some(map.values().filter_map(|v| count_numbers(v)).sum())
+            }
+        }
         Value::Number(num) => num.as_i64(),
         _ => Some(0),
     }
@@ -47,11 +53,12 @@ mod tests {
             ],
             "phones" : {
                 "home" : 12345678900,
-                "work" : 98765432100
+                "work" : 98765432100,
+                "color" : "red"
             }
         }"#;
         let json: Value = serde_json::from_str(string).unwrap();
-        assert_eq!(count_numbers(&json), Some(111111111040));
+        assert_eq!(count_numbers(&json), Some(40));
     }
 
     #[test]
