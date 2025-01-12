@@ -27,10 +27,36 @@ mod tests {
         let lines = vec![
             "Bob would lose 14 happiness units by sitting next to Alice.",
             "Alice would lose 57 happiness units by sitting next to Bob.",
+            "Alice would lose 62 happiness units by sitting next to Carol.",
+            "Bob would gain 48 happiness units by sitting next to Carol.",
+            "Carol would gain 45 happiness units by sitting next to Bob.",
+            "Carol would gain 37 happiness units by sitting next to Alice.",
         ];
         let mut correct = HashMap::new();
         correct.insert(("Alice".to_string(), "Bob".to_string()), -57);
+        correct.insert(("Alice".to_string(), "Carol".to_string()), -62);
         correct.insert(("Bob".to_string(), "Alice".to_string()), -14);
+        correct.insert(("Bob".to_string(), "Carol".to_string()), 48);
+        correct.insert(("Carol".to_string(), "Alice".to_string()), 37);
+        correct.insert(("Carol".to_string(), "Bob".to_string()), 45);
         assert_eq!(correct, parse_preferences(&lines).unwrap());
+    }
+
+    #[test]
+    fn parse_preferences_test_2() {
+        let lines = vec![
+            "Bob would get 14 happiness units by sitting next to Alice.",
+            "Alice would lose 57 happiness units by sitting next to Bob.",
+        ];
+        assert!(parse_preferences(&lines).is_err());
+    }
+
+    #[test]
+    fn parse_preferences_test_3() {
+        let lines = vec![
+            "Bob would gain 14 happiness units by sitting next to Alice.",
+            "Alice would lose 5.7 happiness units by sitting next to Bob.",
+        ];
+        assert!(parse_preferences(&lines).is_err());
     }
 }
