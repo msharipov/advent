@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use sscanf::sscanf;
 use std::collections::HashMap;
 
@@ -33,7 +34,7 @@ pub fn compute_net_happiness(names: &[&str], prefs: &Preferences) -> Result<i32,
                     "no preference specified between {} and {}",
                     &first, &second
                 ))
-            },
+            }
             Some(h) => {
                 total += h;
             }
@@ -44,13 +45,28 @@ pub fn compute_net_happiness(names: &[&str], prefs: &Preferences) -> Result<i32,
                     "no preference specified between {} and {}",
                     &second, &first
                 ))
-            },
+            }
             Some(h) => {
                 total += h;
             }
         }
     }
     Ok(total)
+}
+
+pub fn highest_happiness(names: &[&str], prefs: &Preferences) -> Result<i32, String> {
+    let mut highest = i32::MIN;
+    for perm in names
+        .iter()
+        .permutations(names.len())
+        .map(|p| p.iter().map(|&v| *v).collect::<Vec<&str>>())
+    {
+        let happiness = compute_net_happiness(&perm, prefs)?;
+        if happiness > highest {
+            highest = happiness;
+        }
+    }
+    Ok(highest)
 }
 
 #[cfg(test)]
@@ -123,5 +139,20 @@ mod tests {
         let prefs = parse_preferences(&lines).unwrap();
         let seating = ["Alice", "Daniel", "Carol"];
         assert!(compute_net_happiness(&seating, &prefs).is_err());
+    }
+
+    #[test]
+    fn highest_happiness_test_1() {
+        let lines = [
+            "Bob would lose 14 happiness units by sitting next to Alice.",
+            "Alice would lose 57 happiness units by sitting next to Bob.",
+            "Alice would lose 62 happiness units by sitting next to Carol.",
+            "Bob would gain 48 happiness units by sitting next to Carol.",
+            "Carol would gain 45 happiness units by sitting next to Bob.",
+            "Carol would gain 37 happiness units by sitting next to Alice.",
+        ];
+        let prefs = parse_preferences(&lines).unwrap();
+        let names = ["Alice", "Bob", "Carol"];
+        assert_eq!(highest_happiness(&names, &prefs), Ok(-3));
     }
 }
