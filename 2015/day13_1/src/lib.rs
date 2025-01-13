@@ -20,6 +20,39 @@ pub fn parse_preferences(lines: &[&str]) -> Result<Preferences, sscanf::Error> {
     Ok(prefs)
 }
 
+pub fn compute_net_happiness(names: &[&str], prefs: &Preferences) -> Result<i32, String> {
+    let mut total = 0;
+    let last_pair = [names[0], names[names.len() - 1]];
+    let name_pairs = names.windows(2).chain(last_pair.windows(2));
+    for name_pair in name_pairs {
+        let first = name_pair[0].to_string();
+        let second = name_pair[1].to_string();
+        match prefs.get(&(first.clone(), second.clone())) {
+            None => {
+                return Err(format!(
+                    "no preference specified between {} and {}",
+                    &first, &second
+                ))
+            },
+            Some(h) => {
+                total += h;
+            }
+        }
+        match prefs.get(&(second.clone(), first.clone())) {
+            None => {
+                return Err(format!(
+                    "no preference specified between {} and {}",
+                    &second, &first
+                ))
+            },
+            Some(h) => {
+                total += h;
+            }
+        }
+    }
+    Ok(total)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -60,5 +93,35 @@ mod tests {
             "Alice would lose 5.7 happiness units by sitting next to Bob.",
         ];
         assert!(parse_preferences(&lines).is_err());
+    }
+
+    #[test]
+    fn compute_net_happiness_test_1() {
+        let lines = [
+            "Bob would lose 14 happiness units by sitting next to Alice.",
+            "Alice would lose 57 happiness units by sitting next to Bob.",
+            "Alice would lose 62 happiness units by sitting next to Carol.",
+            "Bob would gain 48 happiness units by sitting next to Carol.",
+            "Carol would gain 45 happiness units by sitting next to Bob.",
+            "Carol would gain 37 happiness units by sitting next to Alice.",
+        ];
+        let prefs = parse_preferences(&lines).unwrap();
+        let seating = ["Alice", "Bob", "Carol"];
+        assert_eq!(compute_net_happiness(&seating, &prefs), Ok(-3));
+    }
+
+    #[test]
+    fn compute_net_happiness_test_2() {
+        let lines = [
+            "Bob would lose 14 happiness units by sitting next to Alice.",
+            "Alice would lose 57 happiness units by sitting next to Bob.",
+            "Alice would lose 62 happiness units by sitting next to Carol.",
+            "Bob would gain 48 happiness units by sitting next to Carol.",
+            "Carol would gain 45 happiness units by sitting next to Bob.",
+            "Carol would gain 37 happiness units by sitting next to Alice.",
+        ];
+        let prefs = parse_preferences(&lines).unwrap();
+        let seating = ["Alice", "Daniel", "Carol"];
+        assert!(compute_net_happiness(&seating, &prefs).is_err());
     }
 }
