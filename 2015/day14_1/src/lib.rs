@@ -23,6 +23,10 @@ impl Reindeer {
     }
 }
 
+fn parse_reindeer(lines: &[&str]) -> Result<Vec<Reindeer>, sscanf::Error> {
+    lines.iter().map(|line| Reindeer::new(line)).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -32,7 +36,8 @@ mod tests {
         assert_eq!(
             Reindeer::new(
                 "Rudolph can fly 123 km/s for 5 seconds, but then must rest for 10 seconds."
-            ).unwrap(),
+            )
+            .unwrap(),
             Reindeer {
                 name: "Rudolph".to_string(),
                 speed: 123,
