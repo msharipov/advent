@@ -36,11 +36,11 @@ impl Reindeer {
     }
 }
 
-fn parse_reindeer(lines: &[&str]) -> Result<Vec<Reindeer>, sscanf::Error> {
+pub fn parse_reindeer(lines: &[&str]) -> Result<Vec<Reindeer>, sscanf::Error> {
     lines.iter().map(|line| Reindeer::new(line)).collect()
 }
 
-fn race_winner(contestants: &[Reindeer], time: i32) -> Option<&Reindeer> {
+pub fn race_winner(contestants: &[Reindeer], time: i32) -> Option<&Reindeer> {
     contestants
         .iter()
         .max_by(|r1, r2| r1.position(time).partial_cmp(&r2.position(time)).unwrap())
