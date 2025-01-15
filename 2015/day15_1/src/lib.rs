@@ -24,6 +24,10 @@ impl Ingredient {
     }
 }
 
+pub fn parse_ingredients(lines: &[&str]) -> Result<Vec<Ingredient>, sscanf::Error> {
+    lines.iter().map(|line| Ingredient::new(line)).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
