@@ -21,6 +21,19 @@ impl Reindeer {
             rest: parsed.3,
         })
     }
+
+    pub fn position(&self, time: i32) -> f32 {
+        let whole_period = self.duration + self.rest;
+        let distance_per_period = (self.speed * self.duration) as f32;
+        let mut distance = distance_per_period * (time / whole_period) as f32;
+        let remaining_time = time % whole_period;
+        if remaining_time > self.duration {
+            distance += distance_per_period;
+        } else {
+            distance += distance_per_period * (remaining_time as f32 / self.duration as f32);
+        }
+        distance
+    }
 }
 
 fn parse_reindeer(lines: &[&str]) -> Result<Vec<Reindeer>, sscanf::Error> {
@@ -53,5 +66,16 @@ mod tests {
             "Rudolph can fly 12.3 km/s for 5 seconds, but then must rest for 10 seconds."
         )
         .is_err())
+    }
+
+    #[test]
+    fn reindeer_position_test_1() {
+        let reindeer = Reindeer {
+            name: "Rudolph".to_owned(),
+            speed: 10,
+            duration: 4,
+            rest: 12,
+        };
+        assert_eq!(reindeer.position(34), 100.0);
     }
 }
