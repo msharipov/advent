@@ -40,6 +40,12 @@ fn parse_reindeer(lines: &[&str]) -> Result<Vec<Reindeer>, sscanf::Error> {
     lines.iter().map(|line| Reindeer::new(line)).collect()
 }
 
+fn race_winner(contestants: &[Reindeer], time: i32) -> Option<&Reindeer> {
+    contestants
+        .iter()
+        .max_by(|r1, r2| r1.position(time).partial_cmp(&r2.position(time)).unwrap())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -77,5 +83,32 @@ mod tests {
             rest: 12,
         };
         assert_eq!(reindeer.position(34), 100.0);
+    }
+
+    #[test]
+    fn race_winner_test_1() {
+        let reindeer = [
+            Reindeer {
+                name: "Rudolph".to_owned(),
+                speed: 10,
+                duration: 4,
+                rest: 12,
+            },
+            Reindeer {
+                name: "Charlie".to_owned(),
+                speed: 15,
+                duration: 7,
+                rest: 6,
+            },
+        ];
+        assert_eq!(
+            *race_winner(&reindeer, 128).unwrap(),
+            Reindeer {
+                name: "Charlie".to_owned(),
+                speed: 15,
+                duration: 7,
+                rest: 6,
+            },
+        );
     }
 }
