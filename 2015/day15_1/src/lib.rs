@@ -1,8 +1,8 @@
+use itertools::Itertools;
+use sscanf::sscanf;
 use std::cmp::max;
 
-use sscanf::sscanf;
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Ingredient {
     name: String,
     capacity: i64,
@@ -57,6 +57,28 @@ pub fn cookie_score(recipe: &[(Ingredient, i64)]) -> i64 {
         0,
     );
     total_capacity * total_durability * total_flavor * total_texture
+}
+
+pub fn best_score(ingredients: &[Ingredient], max_spoons: i64) -> i64 {
+    let ing_count = ingredients.len();
+    let mut best_score: i64 = 0;
+    let mut cutoffs_vec = (0..=max_spoons).combinations(ing_count - 1);
+    for mut cutoffs in &mut cutoffs_vec {
+        cutoffs.sort();
+        let mut amounts = vec![cutoffs[0]];
+        for ing_amount in cutoffs.windows(2) {
+            amounts.push(ing_amount[1] - ing_amount[0]);
+        }
+        amounts.push(max_spoons - cutoffs[cutoffs.len() - 1]);
+        let recipe = ingredients
+            .into_iter()
+            .zip(amounts.iter())
+            .map(|(ing, &amount)| (ing.clone(), amount.clone()))
+            .collect::<Vec<_>>();
+        let score = cookie_score(&recipe);
+        best_score = max(score, best_score);
+    }
+    best_score
 }
 
 #[cfg(test)]
@@ -137,5 +159,28 @@ mod tests {
             ),
         ];
         assert_eq!(cookie_score(&recipe), 0);
+    }
+
+    #[test]
+    fn best_score_test_1() {
+        let ingredients = [
+            Ingredient {
+                name: "Butterscotch".to_owned(),
+                capacity: -1,
+                durability: -2,
+                flavor: 6,
+                texture: 3,
+                calories: 8,
+            },
+            Ingredient {
+                name: "Caramel".to_owned(),
+                capacity: 3,
+                durability: 1,
+                flavor: 3,
+                texture: 1,
+                calories: 6,
+            },
+        ];
+        assert_eq!(best_score(&ingredients, 3), 729);
     }
 }
