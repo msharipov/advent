@@ -5,16 +5,16 @@ use sscanf::sscanf;
 #[derive(Debug, PartialEq)]
 pub struct Ingredient {
     name: String,
-    capacity: i32,
-    durability: i32,
-    flavor: i32,
-    texture: i32,
-    calories: i32,
+    capacity: i64,
+    durability: i64,
+    flavor: i64,
+    texture: i64,
+    calories: i64,
 }
 
 impl Ingredient {
     pub fn new(line: &str) -> Result<Ingredient, sscanf::Error> {
-        let parsed = sscanf!(line, "{String}: capacity {i32}, durability {i32}, flavor {i32}, texture {i32}, calories {i32}")?;
+        let parsed = sscanf!(line, "{String}: capacity {i64}, durability {i64}, flavor {i64}, texture {i64}, calories {i64}")?;
         Ok(Ingredient {
             name: parsed.0,
             capacity: parsed.1,
@@ -30,7 +30,7 @@ pub fn parse_ingredients(lines: &[&str]) -> Result<Vec<Ingredient>, sscanf::Erro
     lines.iter().map(|line| Ingredient::new(line)).collect()
 }
 
-pub fn cookie_score(recipe: &[(Ingredient, i32)]) -> i32 {
+pub fn cookie_score(recipe: &[(Ingredient, i64)]) -> i64 {
     let total_capacity = max(
         recipe
             .iter()
