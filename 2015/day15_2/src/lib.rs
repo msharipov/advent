@@ -82,6 +82,11 @@ pub fn best_score(ingredients: &[Ingredient], max_spoons: i64, calories: Option<
             .zip(amounts.iter())
             .map(|(ing, &amount)| (ing.clone(), amount.clone()))
             .collect::<Vec<_>>();
+        if let Some(c) = calories {
+            if c != count_calories(&recipe) {
+                continue;
+            }
+        }
         let score = cookie_score(&recipe);
         best_score = max(score, best_score);
     }
@@ -218,5 +223,28 @@ mod tests {
             },
         ];
         assert_eq!(best_score(&ingredients, 3, None), 729);
+    }
+
+    #[test]
+    fn best_score_test_2() {
+        let ingredients = [
+            Ingredient {
+                name: "Cinnamon".to_owned(),
+                capacity: 2,
+                durability: 1,
+                flavor: 4,
+                texture: 1,
+                calories: 1,
+            },
+            Ingredient {
+                name: "Caramel".to_owned(),
+                capacity: 3,
+                durability: 1,
+                flavor: 3,
+                texture: 1,
+                calories: 6,
+            },
+        ];
+        assert_eq!(best_score(&ingredients, 3, Some(8)), 693);
     }
 }
