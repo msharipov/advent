@@ -58,6 +58,7 @@ impl Sue {
 mod tests {
     use super::*;
 
+    #[test]
     fn sue_new_test_1() {
         let sue = Sue::new("Sue 1234: perfumes: 2, children: 9, pomeranians: 4");
         let correct = Sue {
@@ -71,5 +72,17 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(sue, Ok(correct));
+    }
+
+    #[test]
+    fn sue_new_test_2() {
+        let sue = Sue::new("Sue 1234: elephants: 4, vizslas: 2, trees: 1");
+        assert_eq!(sue, Err("invalid item name: elephants".to_owned()));
+    }
+
+    #[test]
+    fn sue_new_test_3() {
+        let sue = Sue::new("Sue 1234");
+        assert_eq!(sue, Err("failed to parse the line: Sue 1234".to_owned()));
     }
 }
