@@ -70,5 +70,6 @@ mod tests {
             },
             ..Default::default()
         };
+        assert_eq!(sue, Ok(correct));
     }
 }
