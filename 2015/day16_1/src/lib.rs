@@ -2,23 +2,23 @@ use regex::Regex;
 use sscanf::sscanf;
 
 #[derive(Debug, PartialEq, Default)]
-struct Dogs {
-    samoyeds: Option<u64>,
-    pomeranians: Option<u64>,
-    akitas: Option<u64>,
-    vizslas: Option<u64>,
+pub struct Dogs {
+    pub samoyeds: Option<u64>,
+    pub pomeranians: Option<u64>,
+    pub akitas: Option<u64>,
+    pub vizslas: Option<u64>,
 }
 
 #[derive(Debug, PartialEq, Default)]
 pub struct Sue {
-    number: u64,
-    children: Option<u64>,
-    cats: Option<u64>,
-    dogs: Dogs,
-    goldfish: Option<u64>,
-    trees: Option<u64>,
-    cars: Option<u64>,
-    perfumes: Option<u64>,
+    pub number: u64,
+    pub children: Option<u64>,
+    pub cats: Option<u64>,
+    pub dogs: Dogs,
+    pub goldfish: Option<u64>,
+    pub trees: Option<u64>,
+    pub cars: Option<u64>,
+    pub perfumes: Option<u64>,
 }
 
 impl Sue {
