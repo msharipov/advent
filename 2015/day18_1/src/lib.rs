@@ -17,6 +17,62 @@ pub fn parse_matrix(lines: &[&str]) -> Result<Array2<bool>, ShapeError> {
     mat
 }
 
+pub fn next_step(initial: &Array2<bool>) -> Array2<bool> {
+    let dim = initial.dim();
+    let (rows, cols) = dim;
+    let mut next = Array2::default(initial.raw_dim());
+    for row in 0..rows {
+        for col in 0..cols {
+            let mut neighbors = 0;
+            if row > 0 {
+                if initial[(row - 1, col)] {
+                    neighbors += 1;
+                }
+            }
+            if row > 0 && col > 0 {
+                if initial[(row - 1, col - 1)] {
+                    neighbors += 1;
+                }
+            }
+            if row > 0 && col + 1 < cols {
+                if initial[(row - 1, col + 1)] {
+                    neighbors += 1;
+                }
+            }
+            if col > 0 {
+                if initial[(row, col - 1)] {
+                    neighbors += 1;
+                }
+            }
+            if col + 1 < cols {
+                if initial[(row, col + 1)] {
+                    neighbors += 1;
+                }
+            }
+            if row + 1 < rows {
+                if initial[(row + 1, col)] {
+                    neighbors += 1;
+                }
+            }
+            if row + 1 < rows && col > 0 {
+                if initial[(row + 1, col - 1)] {
+                    neighbors += 1;
+                }
+            }
+            if row + 1 < rows && col + 1 < cols {
+                if initial[(row + 1, col + 1)] {
+                    neighbors += 1;
+                }
+            }
+            let already_on = initial[(row, col)];
+            if neighbors == 3 || (already_on && neighbors == 2) {
+                next[(row, col)] = true;
+            }
+        }
+    }
+    next
+}
+
 #[cfg(test)]
 mod tests {
     use ndarray::arr2;
@@ -33,5 +89,23 @@ mod tests {
             [true, false, false],
         ]);
         assert_eq!(mat, correct);
+    }
+
+    #[test]
+    fn next_step_test_1() {
+        let initial = parse_matrix(&["..#", ".#.", "#.."]).unwrap();
+        let next = next_step(&initial);
+        let correct = parse_matrix(&["...", ".#.", "..."]).unwrap();
+        assert_eq!(next, correct);
+    }
+
+    #[test]
+    fn next_step_test_2() {
+        let initial =
+            parse_matrix(&[".#.#.#", "...##.", "#....#", "..#...", "#.#..#", "####.."]).unwrap();
+        let next = next_step(&initial);
+        let correct =
+            parse_matrix(&["..##..", "..##.#", "...##.", "......", "#.....", "#.##.."]).unwrap();
+        assert_eq!(next, correct);
     }
 }
