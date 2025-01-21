@@ -73,6 +73,16 @@ pub fn next_step(initial: &Array2<bool>) -> Array2<bool> {
     next
 }
 
+pub fn count_on(matrix: &Array2<bool>) -> u64 {
+    matrix
+        .iter()
+        .map(|cell| match cell {
+            true => 1,
+            false => 0,
+        })
+        .sum::<u64>()
+}
+
 #[cfg(test)]
 mod tests {
     use ndarray::arr2;
@@ -107,5 +117,12 @@ mod tests {
         let correct =
             parse_matrix(&["..##..", "..##.#", "...##.", "......", "#.....", "#.##.."]).unwrap();
         assert_eq!(next, correct);
+    }
+
+    #[test]
+    fn count_on_test_1() {
+        let matrix =
+            parse_matrix(&[".#.#.#", "...##.", "#....#", "..#...", "#.#..#", "####.."]).unwrap();
+        assert_eq!(count_on(&matrix), 15);
     }
 }
