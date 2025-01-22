@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use ndarray::{Array2, ShapeError};
 
 pub fn parse_matrix(lines: &[&str]) -> Result<Array2<bool>, ShapeError> {
@@ -21,53 +22,28 @@ pub fn next_step(initial: &Array2<bool>) -> Array2<bool> {
     let dim = initial.dim();
     let (rows, cols) = dim;
     let mut next = Array2::default(initial.raw_dim());
-    for row in 0..rows {
-        for col in 0..cols {
-            let mut neighbors = 0;
-            if row > 0 {
-                if initial[(row - 1, col)] {
-                    neighbors += 1;
+    for (row, col) in (0..rows).cartesian_product(0..cols) {
+        let neighbors = (row as i64 - 1..=row as i64 + 1)
+            .cartesian_product(col as i64 - 1..=col as i64 + 1)
+            .map(|(r, c)| {
+                if (row as i64 == r && col as i64 == c)
+                    || r < 0
+                    || c < 0
+                    || r >= rows as i64
+                    || c >= cols as i64
+                {
+                    return 0;
                 }
-            }
-            if row > 0 && col > 0 {
-                if initial[(row - 1, col - 1)] {
-                    neighbors += 1;
+                if initial[(r as usize, c as usize)] {
+                    1
+                } else {
+                    0
                 }
-            }
-            if row > 0 && col + 1 < cols {
-                if initial[(row - 1, col + 1)] {
-                    neighbors += 1;
-                }
-            }
-            if col > 0 {
-                if initial[(row, col - 1)] {
-                    neighbors += 1;
-                }
-            }
-            if col + 1 < cols {
-                if initial[(row, col + 1)] {
-                    neighbors += 1;
-                }
-            }
-            if row + 1 < rows {
-                if initial[(row + 1, col)] {
-                    neighbors += 1;
-                }
-            }
-            if row + 1 < rows && col > 0 {
-                if initial[(row + 1, col - 1)] {
-                    neighbors += 1;
-                }
-            }
-            if row + 1 < rows && col + 1 < cols {
-                if initial[(row + 1, col + 1)] {
-                    neighbors += 1;
-                }
-            }
-            let already_on = initial[(row, col)];
-            if neighbors == 3 || (already_on && neighbors == 2) {
-                next[(row, col)] = true;
-            }
+            })
+            .sum::<u64>();
+        let already_on = initial[(row, col)];
+        if neighbors == 3 || (already_on && neighbors == 2) {
+            next[(row, col)] = true;
         }
     }
     next
