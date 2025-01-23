@@ -54,6 +54,10 @@ pub fn next_step(initial: &Array2<bool>) -> Array2<bool> {
             next[(row, col)] = true;
         }
     }
+    next[(0, 0)] = true;
+    next[(0, cols - 1)] = true;
+    next[(rows - 1, 0)] = true;
+    next[(rows - 1, cols - 1)] = true;
     next
 }
 
@@ -89,17 +93,17 @@ mod tests {
     fn next_step_test_1() {
         let initial = parse_matrix(&["..#", ".#.", "#.."]).unwrap();
         let next = next_step(&initial);
-        let correct = parse_matrix(&["...", ".#.", "..."]).unwrap();
+        let correct = parse_matrix(&[".#.", "#.#", ".#."]).unwrap();
         assert_eq!(next, correct);
     }
 
     #[test]
     fn next_step_test_2() {
         let initial =
-            parse_matrix(&[".#.#.#", "...##.", "#....#", "..#...", "#.#..#", "####.."]).unwrap();
+            parse_matrix(&["##.#.#", "...##.", "#....#", "..#...", "#.#..#", "####.#"]).unwrap();
         let next = next_step(&initial);
         let correct =
-            parse_matrix(&["..##..", "..##.#", "...##.", "......", "#.....", "#.##.."]).unwrap();
+            parse_matrix(&["#.##.#", "####.#", "...##.", "......", "#...#.", "#.####"]).unwrap();
         assert_eq!(next, correct);
     }
 
@@ -107,6 +111,6 @@ mod tests {
     fn count_on_test_1() {
         let matrix =
             parse_matrix(&[".#.#.#", "...##.", "#....#", "..#...", "#.#..#", "####.."]).unwrap();
-        assert_eq!(count_on(&matrix), 15);
+        assert_eq!(count_on(&matrix), 17)
     }
 }
