@@ -11,7 +11,7 @@ pub fn parse_replacements<'a, I: Iterator<Item = &'a str>>(
         match iter.next() {
             None => return Err("premature input termination".to_owned()),
             Some(line) => {
-                if line == "" {
+                if line.is_empty() {
                     return Ok(replacements);
                 } else {
                     let (key, val) = sscanf!(line, "{String} => {String}")
