@@ -10,7 +10,7 @@ pub fn count_combinations(containers: &[u64], target: u64) -> u64 {
     let mut least_used = containers.len();
     for choice in containers.iter().powerset() {
         if choice.iter().copied().sum::<u64>() == target {
-            let containers_used = choice.iter().count();
+            let containers_used = choice.len();
             if containers_used > least_used {
                 continue;
             }
