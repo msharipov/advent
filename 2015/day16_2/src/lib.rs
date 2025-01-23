@@ -27,8 +27,10 @@ impl Sue {
             Ok(p) => p,
             Err(_) => return Err(format!("failed to parse the line: {line}")),
         };
-        let mut sue = Sue::default();
-        sue.number = number;
+        let mut sue = Sue {
+            number,
+            ..Sue::default()
+        };
         let items_regex = Regex::new(r"([a-z]+: \d+)").unwrap();
         let items_parsed = items_regex.find_iter(&items);
         for item in items_parsed {
