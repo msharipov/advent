@@ -14,8 +14,11 @@ pub fn parse_replacements<'a, I: Iterator<Item = &'a str>>(
                 if line.is_empty() {
                     return Ok(replacements);
                 } else {
-                    let (key, val) = sscanf!(line, "{String} => {String}")
-                        .expect(&format!("failed to parse {line}"));
+                    let parsed = sscanf!(line, "{String} => {String}");
+                    if parsed.is_err() {
+                        return Err(format!("cannot parse {line}"));
+                    }
+                    let (key, val) = parsed.unwrap();
                     match replacements.get_mut(&key) {
                         None => {
                             let mut set = HashSet::new();
