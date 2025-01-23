@@ -71,7 +71,7 @@ pub fn best_score(ingredients: &[Ingredient], max_spoons: i64) -> i64 {
         }
         amounts.push(max_spoons - cutoffs[cutoffs.len() - 1]);
         let recipe = ingredients
-            .into_iter()
+            .iter()
             .zip(amounts.iter())
             .map(|(ing, &amount)| (ing.clone(), amount.clone()))
             .collect::<Vec<_>>();
