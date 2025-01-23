@@ -14,8 +14,7 @@ pub fn parse_matrix(lines: &[&str]) -> Result<Array2<bool>, ShapeError> {
         })
         .flatten()
         .collect::<Vec<_>>();
-    let mat = Array2::from_shape_vec([dim, dim], vec);
-    mat
+    Array2::from_shape_vec([dim, dim], vec)
 }
 
 pub fn next_step(initial: &Array2<bool>) -> Array2<bool> {
