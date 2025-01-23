@@ -4,7 +4,7 @@ use day16_1::{Dogs, Sue};
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");
     let input = input.trim().lines();
-    let sues = input.map(|line| Sue::new(line).unwrap());
+    let mut sues = input.map(|line| Sue::new(line).unwrap());
     let clues = Sue {
         children: Some(3),
         cats: Some(7),
@@ -20,6 +20,6 @@ fn main() {
         perfumes: Some(1),
         ..Default::default()
     };
-    let matching_sue = sues.filter(|sue| sue.compatible(&clues)).next();
+    let matching_sue = sues.find(|sue| sue.compatible(&clues));
     println!("The number of the right aunt Sue is {}.", matching_sue.unwrap().number);
 }
