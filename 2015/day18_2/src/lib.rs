@@ -5,14 +5,13 @@ pub fn parse_matrix(lines: &[&str]) -> Result<Array2<bool>, ShapeError> {
     let dim = lines.len();
     let vec = lines
         .iter()
-        .map(|line| {
+        .flat_map(|line| {
             line.chars().map(|c| match c {
                 '#' => true,
                 '.' => false,
                 _ => panic!("invalid character"),
             })
         })
-        .flatten()
         .collect::<Vec<_>>();
     let mat = Array2::from_shape_vec([dim, dim], vec);
     if let Err(e) = mat {
