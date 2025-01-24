@@ -48,6 +48,24 @@ pub fn parse_sequence<'a>(iter: &mut impl Iterator<Item = &'a str>) -> Result<Ve
         .collect())
 }
 
+pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
+    let mut sequences = HashSet::new();
+    for (index, molecule) in seq.iter().enumerate() {
+        let mut head = String::new();
+        for mol in seq[0..index].iter() {
+            head.push_str(mol);
+        }
+        let mut tail = String::new();
+        for mol in seq[index + 1..seq.len()].iter() {
+            tail.push_str(mol);
+        }
+        for replacement in &repl[molecule] {
+            sequences.insert(format!("{head}{replacement}{tail}"));
+        }
+    }
+    sequences.len()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,11 +98,18 @@ mod tests {
 
     #[test]
     fn parse_sequence_test_2() {
-        let mut lines = ["H => HO", "H => OH", "O => HH", ""]
-            .iter()
-            .copied();
+        let mut lines = ["H => HO", "H => OH", "O => HH", ""].iter().copied();
         let _ = parse_replacements(&mut lines).unwrap();
         let parsed = parse_sequence(&mut lines);
         assert!(parsed.is_err());
+    }
+
+    #[test]
+    fn count_new_sequences_test_1() {
+        let mut lines = ["O => OO", "H => OH", "", "HOO"].iter().copied();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let seq = parse_sequence(&mut lines).unwrap();
+        // OHOO, HOOO
+        assert_eq!(count_new_sequences(&seq, &repl), 2);
     }
 }
