@@ -73,7 +73,7 @@ pub fn best_score(ingredients: &[Ingredient], max_spoons: i64) -> i64 {
         let recipe = ingredients
             .iter()
             .zip(amounts.iter())
-            .map(|(ing, &amount)| (ing.clone(), amount.clone()))
+            .map(|(ing, &amount)| (ing.clone(), amount))
             .collect::<Vec<_>>();
         let score = cookie_score(&recipe);
         best_score = max(score, best_score);

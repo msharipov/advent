@@ -80,7 +80,7 @@ pub fn best_score(ingredients: &[Ingredient], max_spoons: i64, calories: Option<
         let recipe = ingredients
             .iter()
             .zip(amounts.iter())
-            .map(|(ing, &amount)| (ing.clone(), amount.clone()))
+            .map(|(ing, &amount)| (ing.clone(), amount))
             .collect::<Vec<_>>();
         if let Some(c) = calories {
             if c != count_calories(&recipe) {
