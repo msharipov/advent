@@ -1,3 +1,4 @@
+use regex::Regex;
 use sscanf::sscanf;
 use std::collections::{HashMap, HashSet};
 
@@ -35,18 +36,55 @@ pub fn parse_replacements<'a, I: Iterator<Item = &'a str>>(
     }
 }
 
+pub fn parse_sequence<'a>(iter: &mut impl Iterator<Item = &'a str>) -> Result<Vec<String>, String> {
+    let regex = Regex::new("[A-Z][a-z]?").unwrap();
+    let sequence = match iter.next() {
+        None => return Err("sequence is missing".to_owned()),
+        Some(s) => s,
+    };
+    Ok(regex
+        .find_iter(sequence)
+        .map(|m| m.as_str().to_owned())
+        .collect())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn parse_replacements_test_1() {
-        let mut lines = ["H => HO", "H => OH", "O => HH", "", "abracadabra"].iter().copied();
+        let mut lines = ["H => HO", "H => OH", "O => HH", "", "abracadabra"]
+            .iter()
+            .copied();
         let parsed = parse_replacements(&mut lines).unwrap();
         let mut correct = HashMap::new();
-        correct.insert("H".to_owned(), HashSet::from(["HO".to_owned(), "OH".to_owned()]));
+        correct.insert(
+            "H".to_owned(),
+            HashSet::from(["HO".to_owned(), "OH".to_owned()]),
+        );
         correct.insert("O".to_owned(), HashSet::from(["HH".to_owned()]));
         assert_eq!(correct, parsed);
         assert_eq!(lines.next(), Some("abracadabra"));
+    }
+
+    #[test]
+    fn parse_sequence_test_1() {
+        let mut lines = ["H => HO", "H => OH", "O => HH", "", "HAsTeOHCaHe"]
+            .iter()
+            .copied();
+        let _ = parse_replacements(&mut lines).unwrap();
+        let parsed = parse_sequence(&mut lines).unwrap();
+        assert_eq!(parsed, vec!["H", "As", "Te", "O", "H", "Ca", "He"]);
+    }
+
+    #[test]
+    fn parse_sequence_test_2() {
+        let mut lines = ["H => HO", "H => OH", "O => HH", ""]
+            .iter()
+            .copied();
+        let _ = parse_replacements(&mut lines).unwrap();
+        let parsed = parse_sequence(&mut lines);
+        assert!(parsed.is_err());
     }
 }
