@@ -59,8 +59,10 @@ pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
         for mol in seq[index + 1..seq.len()].iter() {
             tail.push_str(mol);
         }
-        for replacement in &repl[molecule] {
-            sequences.insert(format!("{head}{replacement}{tail}"));
+        if let Some(set) = repl.get(molecule) {
+            for replacement in set {
+                sequences.insert(format!("{head}{replacement}{tail}"));
+            }
         }
     }
     sequences.len()
@@ -111,5 +113,15 @@ mod tests {
         let seq = parse_sequence(&mut lines).unwrap();
         // OHOO, HOOO
         assert_eq!(count_new_sequences(&seq, &repl), 2);
+    }
+
+    #[test]
+    fn count_new_sequences_test_2() {
+        let mut lines = ["H => HO", "H => OH", "O => HH", "", "HAsTeOHCaHe"]
+            .iter()
+            .copied();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let seq = parse_sequence(&mut lines).unwrap();
+        assert_eq!(count_new_sequences(&seq, &repl), 5);
     }
 }
