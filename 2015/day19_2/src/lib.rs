@@ -135,4 +135,21 @@ mod tests {
         let seq = parse_sequence(&mut lines).unwrap();
         assert_eq!(count_new_sequences(&seq, &repl), 5);
     }
+
+    #[test]
+    fn invert_replacements_test_1() {
+        let mut lines = ["H => HO", "H => OH", "O => HH", "", "HAsTeOHCaHe"]
+            .iter()
+            .copied();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let inv = invert_replacements(&repl);
+        let correct = {
+            let mut map = HashMap::new();
+            map.insert("HO".to_owned(), "H".to_owned());
+            map.insert("OH".to_owned(), "H".to_owned());
+            map.insert("HH".to_owned(), "O".to_owned());
+            map
+        };
+        assert_eq!(correct, inv);
+    }
 }
