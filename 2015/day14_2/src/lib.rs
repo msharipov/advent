@@ -50,7 +50,7 @@ pub fn race_winner_points(contestants: &[Reindeer], time: i32) -> Option<i32> {
             .collect::<Vec<_>>();
         let mut leader_pos = 0.0;
         let mut leader_indices = vec![];
-        for index in 0..contestants.len() {
+        for (index, _) in contestants.iter().enumerate() {
             if positions[index] > leader_pos + TOL {
                 leader_pos = positions[index];
                 leader_indices = vec![index];
