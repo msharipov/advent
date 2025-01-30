@@ -2,8 +2,8 @@ use serde_json::Value;
 
 pub fn count_numbers(json: &Value) -> Option<i64> {
     match json {
-        Value::Array(vec) => Some(vec.iter().filter_map(|v| count_numbers(v)).sum()),
-        Value::Object(map) => Some(map.values().filter_map(|v| count_numbers(v)).sum()),
+        Value::Array(vec) => Some(vec.iter().filter_map(count_numbers).sum()),
+        Value::Object(map) => Some(map.values().filter_map(count_numbers).sum()),
         Value::Number(num) => num.as_i64(),
         _ => Some(0),
     }
