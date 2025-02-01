@@ -47,16 +47,20 @@ pub fn invert_replacements(repl: &Replacements) -> InvReplacements {
     inverse
 }
 
-pub fn parse_sequence<'a>(iter: &mut impl Iterator<Item = &'a str>) -> Result<Vec<String>, String> {
+fn sequence_from_line(sequence: &str) -> Vec<String> {
     let regex = Regex::new("[A-Z][a-z]?").unwrap();
+    regex
+        .find_iter(sequence)
+        .map(|m| m.as_str().to_owned())
+        .collect()
+}
+
+pub fn parse_sequence<'a>(iter: &mut impl Iterator<Item = &'a str>) -> Result<Vec<String>, String> {
     let sequence = match iter.next() {
         None => return Err("sequence is missing".to_owned()),
         Some(s) => s,
     };
-    Ok(regex
-        .find_iter(sequence)
-        .map(|m| m.as_str().to_owned())
-        .collect())
+    Ok(sequence_from_line(sequence))
 }
 
 pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
