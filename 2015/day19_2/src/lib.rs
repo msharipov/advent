@@ -2,8 +2,8 @@ use regex::Regex;
 use sscanf::sscanf;
 use std::collections::{HashMap, HashSet};
 
-type Replacements = HashMap<String, HashSet<String>>;
-type InvReplacements = HashMap<String, String>;
+type Replacements = HashMap<String, HashSet<Vec<String>>>;
+type InvReplacements = HashMap<Vec<String>, String>;
 
 pub fn parse_replacements<'a, I: Iterator<Item = &'a str>>(
     iter: &mut I,
@@ -21,6 +21,7 @@ pub fn parse_replacements<'a, I: Iterator<Item = &'a str>>(
                         return Err(format!("cannot parse {line}"));
                     }
                     let (key, val) = parsed.unwrap();
+                    let val = sequence_from_line(&val);
                     match replacements.get_mut(&key) {
                         None => {
                             let mut set = HashSet::new();
@@ -66,17 +67,16 @@ pub fn parse_sequence<'a>(iter: &mut impl Iterator<Item = &'a str>) -> Result<Ve
 pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
     let mut sequences = HashSet::new();
     for (index, molecule) in seq.iter().enumerate() {
-        let mut head = String::new();
-        for mol in seq[0..index].iter() {
-            head.push_str(mol);
-        }
-        let mut tail = String::new();
-        for mol in seq[index + 1..seq.len()].iter() {
-            tail.push_str(mol);
-        }
+        let mut head = vec![];
+        head.append(&mut seq[0..index].to_vec());
+        let mut tail = vec![];
+        tail.append(&mut seq[index + 1..].to_vec());
         if let Some(set) = repl.get(molecule) {
             for replacement in set {
-                sequences.insert(format!("{head}{replacement}{tail}"));
+                let mut combined = head.clone();
+                combined.append(&mut replacement.clone());
+                combined.append(&mut tail);
+                sequences.insert(combined);
             }
         }
     }
@@ -96,9 +96,15 @@ mod tests {
         let mut correct = HashMap::new();
         correct.insert(
             "H".to_owned(),
-            HashSet::from(["HO".to_owned(), "OH".to_owned()]),
+            HashSet::from([
+                vec!["H".to_owned(), "O".to_owned()],
+                vec!["O".to_owned(), "H".to_owned()],
+            ]),
         );
-        correct.insert("O".to_owned(), HashSet::from(["HH".to_owned()]));
+        correct.insert(
+            "O".to_owned(),
+            HashSet::from([vec!["H".to_owned(), "H".to_owned()]]),
+        );
         assert_eq!(correct, parsed);
         assert_eq!(lines.next(), Some("abracadabra"));
     }
@@ -149,9 +155,9 @@ mod tests {
         let inv = invert_replacements(&repl);
         let correct = {
             let mut map = HashMap::new();
-            map.insert("HO".to_owned(), "H".to_owned());
-            map.insert("OH".to_owned(), "H".to_owned());
-            map.insert("HH".to_owned(), "O".to_owned());
+            map.insert(vec!["H".to_owned(), "O".to_owned()], "H".to_owned());
+            map.insert(vec!["O".to_owned(), "H".to_owned()], "H".to_owned());
+            map.insert(vec!["H".to_owned(), "H".to_owned()], "O".to_owned());
             map
         };
         assert_eq!(correct, inv);
