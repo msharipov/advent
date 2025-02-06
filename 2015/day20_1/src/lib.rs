@@ -25,6 +25,10 @@ pub fn distinct_factors(product: u64) -> Vec<u64> {
     factors
 }
 
+pub fn count_gifts(house: u64) -> u64 {
+    distinct_factors(house).iter().sum::<u64>() * 10
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,5 +61,15 @@ mod tests {
     #[test]
     fn distinct_factors_test_4() {
         assert_eq!(distinct_factors(49), vec![1, 7, 49]);
+    }
+
+    #[test]
+    fn count_gifts_test_1() {
+        assert_eq!(count_gifts(1), 10);
+    }
+
+    #[test]
+    fn count_gifts_test_2() {
+        assert_eq!(count_gifts(6), 120);
     }
 }
