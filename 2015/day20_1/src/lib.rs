@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
-pub fn parse_input(lines: &[&str]) -> Result<i64, ParseIntError> {
-    lines[0].parse::<i64>()
+pub fn parse_input(lines: &[&str]) -> Result<u64, ParseIntError> {
+    lines[0].parse::<u64>()
 }
 
 pub fn distinct_factors(product: u64) -> Vec<u64> {
