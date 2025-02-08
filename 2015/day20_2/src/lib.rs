@@ -27,7 +27,11 @@ pub fn distinct_factors(product: u64) -> Vec<u64> {
 
 pub fn count_gifts(house: u64) -> u64 {
     let mut elves = distinct_factors(house);
-    let cutoff = house / 50;
+    let cutoff = if house % 50 == 0 {
+        house / 50
+    } else {
+        house / 50 + 1
+    };
     elves.reverse();
     elves.iter().take_while(|&&e| e >= cutoff).sum::<u64>() * 11
 }
@@ -74,5 +78,10 @@ mod tests {
     #[test]
     fn count_gifts_test_2() {
         assert_eq!(count_gifts(6), 132);
+    }
+
+    #[test]
+    fn count_gifts_test_3() {
+        assert_eq!(count_gifts(81), 1320);
     }
 }
