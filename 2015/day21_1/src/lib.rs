@@ -36,6 +36,20 @@ impl Player {
         }
         damage
     }
+
+    pub fn armor(&self) -> i64 {
+        let mut armor = 0;
+        if let Some(a) = &self.armor {
+            armor += a.armor;
+        }
+        if let Some(a) = &self.left_ring {
+            armor += a.armor;
+        }
+        if let Some(a) = &self.right_ring {
+            armor += a.armor;
+        }
+        armor
+    }
 }
 
 #[cfg(test)]
@@ -45,5 +59,10 @@ mod tests {
     #[test]
     fn player_damage_test_1() {
         assert_eq!(Player::default().damage(), 0);
+    }
+
+    #[test]
+    fn player_armor_test_1() {
+        assert_eq!(Player::default().armor(), 0);
     }
 }
