@@ -50,6 +50,20 @@ impl Player {
         }
         armor
     }
+
+    pub fn equipment_cost(&self) -> i64 {
+        let mut cost = self.weapon.cost;
+        if let Some(a) = &self.armor {
+            cost += a.cost;
+        }
+        if let Some(r) = &self.left_ring {
+            cost += r.cost;
+        }
+        if let Some(r) = &self.right_ring {
+            cost += r.cost;
+        }
+        cost
+    }
 }
 
 #[cfg(test)]
@@ -110,5 +124,33 @@ mod tests {
             right_ring: Some(ring2),
         };
         assert_eq!(player.armor(), 11);
+    }
+
+    #[test]
+    fn player_equipment_cost_test_1() {
+        assert_eq!(Player::default().equipment_cost(), 0);
+    }
+
+    #[test]
+    fn player_equipment_cost_test_2() {
+        let sword = Weapon { cost: 3, damage: 4 };
+        let armor = Armor { cost: 5, armor: 8 };
+        let ring1 = Ring {
+            cost: 5,
+            damage: 2,
+            armor: 1,
+        };
+        let ring2 = Ring {
+            cost: 9,
+            damage: 4,
+            armor: 2,
+        };
+        let player = Player {
+            weapon: sword,
+            armor: Some(armor),
+            left_ring: Some(ring1),
+            right_ring: Some(ring2),
+        };
+        assert_eq!(player.equipment_cost(), 22);
     }
 }
