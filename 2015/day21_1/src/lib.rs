@@ -23,9 +23,17 @@ pub struct Player {
     pub armor: Option<Armor>,
     pub left_ring: Option<Ring>,
     pub right_ring: Option<Ring>,
+    pub health: i64,
 }
 
 impl Player {
+    pub fn new(hp: i64) -> Self {
+        Player {
+            health: hp,
+            ..Player::default()
+        }
+    }
+
     pub fn damage(&self) -> i64 {
         let mut damage = self.weapon.damage;
         if let Some(ring) = &self.left_ring {
@@ -94,6 +102,7 @@ mod tests {
             armor: Some(armor),
             left_ring: Some(ring1),
             right_ring: Some(ring2),
+            health: 100,
         };
         assert_eq!(player.damage(), 10);
     }
@@ -122,6 +131,7 @@ mod tests {
             armor: Some(armor),
             left_ring: Some(ring1),
             right_ring: Some(ring2),
+            health: 100,
         };
         assert_eq!(player.armor(), 11);
     }
@@ -150,6 +160,7 @@ mod tests {
             armor: Some(armor),
             left_ring: Some(ring1),
             right_ring: Some(ring2),
+            health: 100,
         };
         assert_eq!(player.equipment_cost(), 22);
     }
