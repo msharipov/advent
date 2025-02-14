@@ -32,6 +32,26 @@ pub struct Shop {
     rings: Vec<Ring>,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct Boss {
+    health: i64,
+    damage: i64,
+    armor: i64,
+}
+
+impl Boss {
+    pub fn parse(lines: &[&str]) -> Result<Self, sscanf::Error> {
+        let health = sscanf::sscanf!(lines[0], "Hit Points: {i64}")?;
+        let damage = sscanf::sscanf!(lines[1], "Damage: {i64}")?;
+        let armor = sscanf::sscanf!(lines[2], "Armor: {i64}")?;
+        Ok(Boss {
+            health,
+            damage,
+            armor,
+        })
+    }
+}
+
 impl Player {
     pub fn new(hp: i64) -> Self {
         Player {
@@ -169,5 +189,16 @@ mod tests {
             health: 100,
         };
         assert_eq!(player.equipment_cost(), 22);
+    }
+
+    #[test]
+    fn boss_parse_test_1() {
+        let lines = ["Hit Points: 123", "Damage: 22", "Armor: 5"];
+        let correct = Boss {
+            health: 123,
+            damage: 22,
+            armor: 5,
+        };
+        assert_eq!(Boss::parse(&lines).unwrap(), correct);
     }
 }
