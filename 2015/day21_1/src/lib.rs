@@ -26,6 +26,12 @@ pub struct Player {
     pub health: i64,
 }
 
+pub struct Shop {
+    weapons: Vec<Weapon>,
+    armor: Vec<Armor>,
+    rings: Vec<Ring>,
+}
+
 impl Player {
     pub fn new(hp: i64) -> Self {
         Player {
