@@ -98,6 +98,19 @@ impl Player {
         }
         cost
     }
+
+    pub fn beats(&self, boss: &Boss) -> bool {
+        let mut player_hp = self.health;
+        let mut boss_hp = boss.health;
+        while player_hp > 0 {
+            boss_hp -= self.damage() - boss.armor;
+            if boss_hp <= 0 {
+                return true;
+            }
+            player_hp -= boss.damage - self.armor();
+        }
+        false
+    }
 }
 
 #[cfg(test)]
@@ -189,6 +202,23 @@ mod tests {
             health: 100,
         };
         assert_eq!(player.equipment_cost(), 22);
+    }
+
+    #[test]
+    fn player_beats_test_1() {
+        let boss = Boss {
+            health: 12,
+            damage: 7,
+            armor: 2,
+        };
+        let player = Player {
+            weapon: Weapon { cost: 5, damage: 5 },
+            armor: Some(Armor { cost: 5, armor: 5 }),
+            right_ring: None,
+            left_ring: None,
+            health: 8,
+        };
+        assert!(&player.beats(&boss));
     }
 
     #[test]
