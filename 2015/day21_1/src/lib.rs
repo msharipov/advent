@@ -1,16 +1,18 @@
-#[derive(Default)]
+use itertools::Itertools;
+
+#[derive(Default, Clone)]
 pub struct Weapon {
     cost: i64,
     damage: i64,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Armor {
     cost: i64,
     armor: i64,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Ring {
     cost: i64,
     damage: i64,
@@ -30,6 +32,37 @@ pub struct Shop {
     weapons: Vec<Weapon>,
     armor: Vec<Armor>,
     rings: Vec<Ring>,
+}
+
+impl Shop {
+    pub fn lowest_cost_to_beat(&self, player_hp: i64, boss: &Boss) -> Option<i64> {
+        let weapons = self.weapons.clone();
+        let mut armors = self.armor.iter().map(|a| Some(a.clone())).collect_vec();
+        armors.push(None);
+        let mut rings = self.rings.iter().map(|r| Some(r.clone())).collect_vec();
+        rings.push(None);
+        rings.push(None);
+        let ring_combos = rings.iter().combinations(2);
+        let mut lowest_cost = None;
+        for equipment in weapons
+            .iter()
+            .cartesian_product(armors)
+            .cartesian_product(ring_combos)
+        {
+            let mut player = Player::new(player_hp);
+            player.weapon = equipment.0 .0.clone();
+            player.armor = equipment.0 .1.clone();
+            player.left_ring = equipment.1[0].clone();
+            player.right_ring = equipment.1[1].clone();
+            if player.beats(boss) {
+                let cost = player.equipment_cost();
+                if lowest_cost.is_none() || cost < lowest_cost.unwrap() {
+                    lowest_cost = Some(cost);
+                }
+            }
+        }
+        lowest_cost
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -230,5 +263,43 @@ mod tests {
             armor: 5,
         };
         assert_eq!(Boss::parse(&lines).unwrap(), correct);
+    }
+
+    #[test]
+    fn shop_lowest_cost_to_beat_test_1() {
+        let shop = Shop {
+            weapons: vec![Weapon { cost: 6, damage: 7 }],
+            armor: vec![Armor { cost: 5, armor: 3 }],
+            rings: vec![Ring {
+                cost: 3,
+                damage: 1,
+                armor: 2,
+            }],
+        };
+        let boss = Boss {
+            health: 100,
+            damage: 0,
+            armor: 2,
+        };
+        assert_eq!(shop.lowest_cost_to_beat(100, &boss), Some(6));
+    }
+
+    #[test]
+    fn shop_lowest_cost_to_beat_test_2() {
+        let shop = Shop {
+            weapons: vec![Weapon { cost: 6, damage: 7 }],
+            armor: vec![Armor { cost: 5, armor: 3 }],
+            rings: vec![Ring {
+                cost: 11,
+                damage: 1,
+                armor: 2,
+            }],
+        };
+        let boss = Boss {
+            health: 100,
+            damage: 3,
+            armor: 2,
+        };
+        assert_eq!(shop.lowest_cost_to_beat(10, &boss), Some(11));
     }
 }
