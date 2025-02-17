@@ -6,10 +6,22 @@ pub struct Weapon {
     damage: i64,
 }
 
+impl Weapon {
+    pub fn new(cost: i64, damage: i64) -> Self {
+        Weapon { cost, damage }
+    }
+}
+
 #[derive(Default, Clone)]
 pub struct Armor {
     cost: i64,
     armor: i64,
+}
+
+impl Armor {
+    pub fn new(cost: i64, armor: i64) -> Self {
+        Armor { cost, armor }
+    }
 }
 
 #[derive(Default, Clone)]
@@ -17,6 +29,16 @@ pub struct Ring {
     cost: i64,
     damage: i64,
     armor: i64,
+}
+
+impl Ring {
+    pub fn new(cost: i64, damage: i64, armor: i64) -> Self {
+        Ring {
+            cost,
+            damage,
+            armor,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -35,6 +57,14 @@ pub struct Shop {
 }
 
 impl Shop {
+    pub fn new(weapons: Vec<Weapon>, armor: Vec<Armor>, rings: Vec<Ring>) -> Self {
+        Shop {
+            weapons,
+            armor,
+            rings,
+        }
+    }
+
     pub fn lowest_cost_to_beat(&self, player_hp: i64, boss: &Boss) -> Option<i64> {
         let weapons = self.weapons.clone();
         let mut armors = self.armor.iter().map(|a| Some(a.clone())).collect_vec();
