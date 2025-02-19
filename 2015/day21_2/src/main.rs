@@ -29,6 +29,6 @@ fn main() {
         Ring::new(80, 0, 3),
     ];
     let shop = Shop::new(weapons, armors, rings);
-    let lowest_cost = shop.lowest_cost_to_beat(100, &boss).unwrap();
-    println!("Lowest cost: {lowest_cost}");
+    let highest_cost = shop.highest_cost_to_lose(100, &boss).unwrap();
+    println!("Highest cost: {highest_cost}");
 }
