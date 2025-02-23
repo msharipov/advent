@@ -1,7 +1,15 @@
 pub enum Effect {
-    Shield(u64),
-    Poison(u64),
-    Recharge(u64),
+    ShieldEffect(u64),
+    PoisonEffect(u64),
+    RechargeEffect(u64),
+}
+
+pub enum Spell {
+    MagicMissile,
+    Drain,
+    Shield,
+    Poison,
+    Recharge,
 }
 
 pub struct Player {
