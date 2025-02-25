@@ -1,3 +1,5 @@
+use sscanf::sscanf;
+
 pub enum Effect {
     ShieldEffect(u64),
     PoisonEffect(u64),
@@ -19,6 +21,20 @@ pub struct Player {
     effects: Vec<Effect>,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct Boss {
+    health: u64,
+    damage: u64,
+}
+
+impl Boss {
+    pub fn parse(lines: &[&str]) -> Result<Self, sscanf::Error> {
+        let health = sscanf!(lines[0], "Hit Points: {u64}")?;
+        let damage = sscanf!(lines[1], "Damage: {u64}")?;
+        Ok(Boss { health, damage })
+    }
+}
+
 impl Player {
     pub fn new(health: u64) -> Player {
         Player {
@@ -27,5 +43,20 @@ impl Player {
             mana: 500,
             effects: vec![],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn boss_parse_test_1() {
+        let lines = &["Hit Points: 44", "Damage: 12"];
+        let correct = Boss {
+            health: 44,
+            damage: 12,
+        };
+        assert_eq!(Boss::parse(lines).unwrap(), correct);
     }
 }
