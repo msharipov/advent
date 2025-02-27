@@ -65,6 +65,18 @@ impl Player {
             self.alive = false;
         }
     }
+
+    pub fn apply_shield(&mut self) -> Result<(), ()> {
+        let shielded = self
+            .effects
+            .iter()
+            .any(|e| matches!(e, Effect::ShieldEffect(_)));
+        if shielded {
+            self.effects.push(Effect::ShieldEffect(7));
+            return Ok(());
+        }
+        Err(())
+    }
 }
 
 #[cfg(test)]
