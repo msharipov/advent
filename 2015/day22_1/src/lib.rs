@@ -18,6 +18,7 @@ pub struct Player {
     health: u64,
     alive: bool,
     mana: u64,
+    temp_armor: u64,
     effects: Vec<Effect>,
 }
 
@@ -41,22 +42,17 @@ impl Player {
             health,
             alive: health > 0,
             mana: 500,
+            temp_armor: 0,
             effects: vec![],
         }
     }
 
     pub fn take_damage(&mut self, raw: u64) {
         let mut damage = raw;
-        let shielded = self
-            .effects
-            .iter()
-            .any(|e| matches!(e, Effect::ShieldEffect(_)));
-        if shielded {
-            if damage > 7 {
-                damage -= 7;
-            } else if damage <= 7 {
-                damage = 1;
-            }
+        if damage > self.temp_armor {
+            damage -= self.temp_armor;
+        } else {
+            damage = 1;
         }
         if self.health > damage {
             self.health -= damage;
