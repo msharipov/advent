@@ -44,6 +44,27 @@ impl Player {
             effects: vec![],
         }
     }
+
+    pub fn take_damage(&mut self, raw: u64) {
+        let mut damage = raw;
+        let shielded = self.effects.iter().any(|e| match e {
+            Effect::ShieldEffect(_) => true,
+            _ => false,
+        });
+        if shielded {
+            if damage > 7 {
+                damage -= 7;
+            } else if damage <= 7 {
+                damage = 1;
+            }
+        }
+        if self.health > damage {
+            self.health -= damage;
+        } else {
+            self.health = 0;
+            self.alive = false;
+        }
+    }
 }
 
 #[cfg(test)]
