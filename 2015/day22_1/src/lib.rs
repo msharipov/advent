@@ -47,10 +47,10 @@ impl Player {
 
     pub fn take_damage(&mut self, raw: u64) {
         let mut damage = raw;
-        let shielded = self.effects.iter().any(|e| match e {
-            Effect::ShieldEffect(_) => true,
-            _ => false,
-        });
+        let shielded = self
+            .effects
+            .iter()
+            .any(|e| matches!(e, Effect::ShieldEffect(_)));
         if shielded {
             if damage > 7 {
                 damage -= 7;
