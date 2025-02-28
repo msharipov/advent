@@ -16,7 +16,6 @@ pub enum Spell {
 
 pub struct Player {
     health: u64,
-    alive: bool,
     mana: u64,
     temp_armor: u64,
     effects: Vec<Effect>,
@@ -40,7 +39,6 @@ impl Player {
     pub fn new(health: u64) -> Player {
         Player {
             health,
-            alive: health > 0,
             mana: 500,
             temp_armor: 0,
             effects: vec![],
@@ -58,7 +56,6 @@ impl Player {
             self.health -= damage;
         } else {
             self.health = 0;
-            self.alive = false;
         }
     }
 
@@ -72,6 +69,10 @@ impl Player {
             return Ok(());
         }
         Err(())
+    }
+
+    pub fn alive(&self) -> bool {
+        self.health > 0
     }
 }
 
