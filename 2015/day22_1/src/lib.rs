@@ -2,6 +2,7 @@ use sscanf::sscanf;
 
 pub enum Effect {
     ShieldEffect(u64),
+    DrainEffect(u64),
     PoisonEffect(u64),
     RechargeEffect(u64),
 }
