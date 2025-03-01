@@ -87,6 +87,10 @@ impl Player {
         }
     }
 
+    pub fn reset_effects(&mut self) {
+        self.temp_armor = 0;
+    }
+
     pub fn alive(&self) -> bool {
         self.health > 0
     }
