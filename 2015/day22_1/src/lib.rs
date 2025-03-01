@@ -64,11 +64,27 @@ impl Player {
             .effects
             .iter()
             .any(|e| matches!(e, Effect::ShieldEffect(_)));
-        if shielded {
+        if !shielded {
             self.effects.push(Effect::ShieldEffect(7));
             return Ok(());
         }
         Err(())
+    }
+
+    pub fn update_effects(&mut self) {
+        let mut new_effects = vec![];
+        for effect in &mut self.effects {
+            use Effect::*;
+            match effect {
+                ShieldEffect(dur) => {
+                    self.temp_armor = 7;
+                    if *dur > 0 {
+                        new_effects.push(ShieldEffect(*dur - 1));
+                    }
+                }
+                _ => (),
+            }
+        }
     }
 
     pub fn alive(&self) -> bool {
@@ -88,5 +104,17 @@ mod tests {
             damage: 12,
         };
         assert_eq!(Boss::parse(lines).unwrap(), correct);
+    }
+
+    #[test]
+    fn player_damage_test_1() {
+        let mut player = Player::new(15);
+        assert!(player.alive());
+        player.apply_shield().unwrap();
+        player.update_effects();
+        player.take_damage(21);
+        assert!(player.alive());
+        player.take_damage(10);
+        assert!(!player.alive());
     }
 }
