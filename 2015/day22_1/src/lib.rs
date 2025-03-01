@@ -1,5 +1,6 @@
 use sscanf::sscanf;
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum Effect {
     ShieldEffect(u64),
     DrainEffect(u64),
@@ -15,6 +16,10 @@ pub enum Spell {
     Recharge,
 }
 
+const SHIELD_COST: u64 = 113;
+const SHIELD_DURATION: u64 = 6;
+const SHIELD_ARMOR: u64 = 7;
+
 pub struct Player {
     health: u64,
     mana: u64,
@@ -22,17 +27,45 @@ pub struct Player {
     effects: Vec<Effect>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Boss {
     health: u64,
     damage: u64,
+    effects: Vec<Effect>,
 }
 
 impl Boss {
     pub fn parse(lines: &[&str]) -> Result<Self, sscanf::Error> {
         let health = sscanf!(lines[0], "Hit Points: {u64}")?;
         let damage = sscanf!(lines[1], "Damage: {u64}")?;
-        Ok(Boss { health, damage })
+        Ok(Boss {
+            health,
+            damage,
+            effects: vec![],
+        })
+    }
+
+    pub fn update_effects(&mut self) {
+        let new_effects = vec![];
+        for effect in &mut self.effects {
+            match effect {
+                _ => todo!(),
+            }
+        }
+        self.effects = new_effects;
+    }
+
+    pub fn alive(&self) -> bool {
+        self.health > 0
+    }
+}
+
+impl Clone for Player {
+    fn clone(&self) -> Self {
+        Player {
+            effects: self.effects[..].to_vec(),
+            ..*self
+        }
     }
 }
 
@@ -66,7 +99,7 @@ impl Player {
             .iter()
             .any(|e| matches!(e, Effect::ShieldEffect(_)));
         if !shielded {
-            self.effects.push(Effect::ShieldEffect(7));
+            self.effects.push(Effect::ShieldEffect(SHIELD_DURATION));
             return Ok(());
         }
         Err(())
@@ -78,7 +111,7 @@ impl Player {
             use Effect::*;
             match effect {
                 ShieldEffect(dur) => {
-                    self.temp_armor = 7;
+                    self.temp_armor = SHIELD_ARMOR;
                     if *dur > 0 {
                         new_effects.push(ShieldEffect(*dur - 1));
                     }
@@ -86,6 +119,7 @@ impl Player {
                 _ => (),
             }
         }
+        self.effects = new_effects;
     }
 
     pub fn reset_effects(&mut self) {
@@ -95,6 +129,70 @@ impl Player {
     pub fn alive(&self) -> bool {
         self.health > 0
     }
+}
+
+#[derive(Clone)]
+pub struct GameState {
+    player: Player,
+    boss: Boss,
+}
+
+impl GameState {
+    pub fn lowest_mana_to_win(max_depth: u64) -> Option<u64> {
+        None
+    }
+}
+
+fn recursive_step(
+    mut state: GameState,
+    cur_depth: u64,
+    max_depth: u64,
+    action: Spell,
+    mut spent_mana: u64,
+) -> Option<u64> {
+    if cur_depth >= max_depth {
+        return None;
+    }
+    state.player.update_effects();
+    match action {
+        Spell::Shield => {
+            if state.player.mana < SHIELD_COST {
+                return None;
+            }
+            state.player.mana -= SHIELD_COST;
+            spent_mana += SHIELD_COST;
+            if state.player.apply_shield().is_err() {
+                return None;
+            }
+        }
+        _ => todo!(),
+    }
+    state.boss.update_effects();
+    if !state.boss.alive() {
+        return Some(spent_mana);
+    }
+    state.player.take_damage(state.boss.damage);
+    let mut lowest_mana = None;
+    let shield_next = recursive_step(
+        state.clone(),
+        cur_depth + 1,
+        max_depth,
+        Spell::Shield,
+        spent_mana,
+    );
+    if shield_next.is_some() {
+        match lowest_mana {
+            None => {
+                lowest_mana = shield_next;
+            }
+            Some(mana) => {
+                if mana > shield_next.unwrap() {
+                    lowest_mana = shield_next;
+                }
+            }
+        }
+    }
+    lowest_mana
 }
 
 #[cfg(test)]
@@ -107,6 +205,7 @@ mod tests {
         let correct = Boss {
             health: 44,
             damage: 12,
+            effects: vec![],
         };
         assert_eq!(Boss::parse(lines).unwrap(), correct);
     }
