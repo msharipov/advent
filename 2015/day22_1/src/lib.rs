@@ -154,6 +154,7 @@ fn recursive_step(
         return None;
     }
     state.player.update_effects();
+    state.boss.update_effects();
     match action {
         Spell::Shield => {
             if state.player.mana < SHIELD_COST {
@@ -167,11 +168,19 @@ fn recursive_step(
         }
         _ => todo!(),
     }
+    state.player.reset_effects();
+    state.player.update_effects();
     state.boss.update_effects();
     if !state.boss.alive() {
         return Some(spent_mana);
     }
     state.player.take_damage(state.boss.damage);
+    state.player.reset_effects();
+    if !state.player.alive() {
+        return None;
+    }
+
+    // Explore the next possible moves
     let mut lowest_mana = None;
     let shield_next = recursive_step(
         state.clone(),
