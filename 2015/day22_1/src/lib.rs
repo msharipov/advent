@@ -265,4 +265,28 @@ mod tests {
         player.take_damage(10);
         assert!(!player.alive());
     }
+
+    #[test]
+    fn lowest_mana_to_win_test_1() {
+        let player = Player::new(15);
+        let boss = Boss {
+            health: 15,
+            damage: 1,
+            effects: vec![],
+        };
+        let state = GameState { player, boss };
+        assert_eq!(state.lowest_mana_to_win(6), Some(53 * 4));
+    }
+
+    #[test]
+    fn lowest_mana_to_win_test_2() {
+        let player = Player::new(15);
+        let boss = Boss {
+            health: 12,
+            damage: 1,
+            effects: vec![],
+        };
+        let state = GameState { player, boss };
+        assert_eq!(state.lowest_mana_to_win(2), None);
+    }
 }
