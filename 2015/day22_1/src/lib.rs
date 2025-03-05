@@ -10,6 +10,7 @@ pub enum Effect {
     RechargeEffect(u64),
 }
 
+#[derive(Clone)]
 pub enum Spell {
     MagicMissile,
     Drain,
@@ -196,21 +197,24 @@ fn recursive_step(
 
     // Explore the next possible moves
     let mut lowest_mana = None;
-    let shield_next = recursive_step(
-        state.clone(),
-        cur_depth + 1,
-        max_depth,
-        Spell::Shield,
-        spent_mana,
-    );
-    if shield_next.is_some() {
+    let spells = [Spell::Shield, Spell::MagicMissile];
+    let mana_spent_results = spells.iter().filter_map(|spell| {
+        recursive_step(
+            state.clone(),
+            cur_depth + 1,
+            max_depth,
+            spell.clone(),
+            spent_mana,
+        )
+    });
+    for mana_spent in mana_spent_results {
         match lowest_mana {
             None => {
-                lowest_mana = shield_next;
+                lowest_mana = Some(mana_spent);
             }
             Some(mana) => {
-                if mana > shield_next.unwrap() {
-                    lowest_mana = shield_next;
+                if mana > mana_spent {
+                    lowest_mana = Some(mana_spent);
                 }
             }
         }
