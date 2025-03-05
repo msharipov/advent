@@ -24,6 +24,8 @@ const SHIELD_DURATION: u64 = 6;
 const SHIELD_ARMOR: u64 = 7;
 const MISSILE_COST: u64 = 53;
 const MISSILE_DAMAGE: u64 = 4;
+const DRAIN_COST: u64 = 73;
+const DRAIN_DAMAGE: u64 = 2;
 
 pub struct Player {
     health: u64,
@@ -196,6 +198,15 @@ fn recursive_step(
             spent_mana += MISSILE_COST;
             state.boss.health -= min(state.boss.health, MISSILE_DAMAGE);
         }
+        Spell::Drain => {
+            if state.player.mana < DRAIN_COST {
+                return None;
+            }
+            state.player.mana -= DRAIN_COST;
+            spent_mana += DRAIN_COST;
+            state.boss.health -= min(state.boss.health, DRAIN_DAMAGE);
+            state.player.health += DRAIN_DAMAGE;
+        }
         _ => todo!(),
     }
     state.player.reset_effects();
@@ -214,7 +225,7 @@ fn recursive_step(
 
     // Explore the next possible moves
     let mut lowest_mana = None;
-    let spells = [Spell::Shield, Spell::MagicMissile];
+    let spells = [Spell::Shield, Spell::MagicMissile, Spell::Drain];
     let mana_spent_results = spells.iter().filter_map(|spell| {
         recursive_step(
             state.clone(),
