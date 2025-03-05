@@ -143,8 +143,25 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn lowest_mana_to_win(max_depth: u64) -> Option<u64> {
-        None
+    pub fn lowest_mana_to_win(&self, max_depth: u64) -> Option<u64> {
+        let mut lowest_mana = None;
+        let spells = [Spell::Shield, Spell::MagicMissile];
+        let mana_spent_results = spells
+            .iter()
+            .filter_map(|spell| recursive_step(self.clone(), 0, max_depth, spell.clone(), 0));
+        for mana_spent in mana_spent_results {
+            match lowest_mana {
+                None => {
+                    lowest_mana = Some(mana_spent);
+                }
+                Some(mana) => {
+                    if mana > mana_spent {
+                        lowest_mana = Some(mana_spent);
+                    }
+                }
+            }
+        }
+        lowest_mana
     }
 }
 
