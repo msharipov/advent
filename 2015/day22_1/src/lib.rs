@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 use sscanf::sscanf;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -19,6 +21,8 @@ pub enum Spell {
 const SHIELD_COST: u64 = 113;
 const SHIELD_DURATION: u64 = 6;
 const SHIELD_ARMOR: u64 = 7;
+const MISSILE_COST: u64 = 53;
+const MISSILE_DAMAGE: u64 = 4;
 
 pub struct Player {
     health: u64,
@@ -166,10 +170,20 @@ fn recursive_step(
                 return None;
             }
         }
+        Spell::MagicMissile => {
+            if state.player.mana < MISSILE_COST {
+                return None;
+            }
+            state.player.mana -= MISSILE_COST;
+            spent_mana += MISSILE_COST;
+            state.boss.health -= min(state.boss.health, MISSILE_DAMAGE);
+        }
         _ => todo!(),
     }
     state.player.reset_effects();
     state.player.update_effects();
+    // End of player's turn
+
     state.boss.update_effects();
     if !state.boss.alive() {
         return Some(spent_mana);
