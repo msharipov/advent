@@ -29,6 +29,9 @@ const DRAIN_DAMAGE: u64 = 2;
 const POISON_COST: u64 = 173;
 const POISON_DURATION: u64 = 6;
 const POISON_DAMAGE: u64 = 3;
+const RECHARGE_COST: u64 = 229;
+const RECHARGE_DURATION: u64 = 5;
+const RECHARGE_AMOUNT: u64 = 101;
 
 pub struct Player {
     health: u64,
@@ -132,6 +135,18 @@ impl Player {
         Err(())
     }
 
+    pub fn apply_recharge(&mut self) -> Result<(), ()> {
+        let recharging = self
+            .effects
+            .iter()
+            .any(|e| matches!(e, Effect::RechargeEffect(_)));
+        if !recharging {
+            self.effects.push(Effect::RechargeEffect(RECHARGE_DURATION));
+            return Ok(());
+        }
+        Err(())
+    }
+
     pub fn update_effects(&mut self) {
         let mut new_effects = vec![];
         for effect in &mut self.effects {
@@ -141,6 +156,12 @@ impl Player {
                     self.temp_armor = SHIELD_ARMOR;
                     if *dur > 0 {
                         new_effects.push(ShieldEffect(*dur - 1));
+                    }
+                }
+                RechargeEffect(dur) => {
+                    self.mana += RECHARGE_AMOUNT;
+                    if *dur > 0 {
+                        new_effects.push(RechargeEffect(*dur - 1));
                     }
                 }
                 _ => (),
