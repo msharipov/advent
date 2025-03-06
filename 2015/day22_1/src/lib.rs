@@ -186,6 +186,10 @@ pub struct GameState {
 }
 
 impl GameState {
+    pub fn new(player: Player, boss: Boss) -> Self {
+        GameState { player, boss }
+    }
+
     pub fn lowest_mana_to_win(&self, max_depth: u64) -> Option<u64> {
         let mut lowest_mana = None;
         let spells = [Spell::Shield, Spell::MagicMissile];
