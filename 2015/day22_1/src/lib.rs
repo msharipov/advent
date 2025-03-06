@@ -227,12 +227,22 @@ fn recursive_step(
             state.boss.health -= min(state.boss.health, DRAIN_DAMAGE);
             state.player.health += DRAIN_DAMAGE;
         }
+        Spell::Poison => {
+            if state.player.mana < POISON_COST {
+                return None;
+            }
+            state.player.mana -= POISON_COST;
+            spent_mana += POISON_COST;
+            if state.boss.apply_poison().is_err() {
+                return None;
+            }
+        }
         _ => todo!(),
     }
     state.player.reset_effects();
-    state.player.update_effects();
     // End of player's turn
 
+    state.player.update_effects();
     state.boss.update_effects();
     if !state.boss.alive() {
         return Some(spent_mana);
@@ -245,7 +255,12 @@ fn recursive_step(
 
     // Explore the next possible moves
     let mut lowest_mana = None;
-    let spells = [Spell::Shield, Spell::MagicMissile, Spell::Drain];
+    let spells = [
+        Spell::Shield,
+        Spell::MagicMissile,
+        Spell::Drain,
+        Spell::Poison,
+    ];
     let mana_spent_results = spells.iter().filter_map(|spell| {
         recursive_step(
             state.clone(),
@@ -314,6 +329,9 @@ mod tests {
         let player = Player::new(15);
         let boss = Boss::new(15, 6);
         let state = GameState { player, boss };
-        assert_eq!(state.lowest_mana_to_win(5), Some(53 * 4 + 113));
+        assert_eq!(
+            state.lowest_mana_to_win(6),
+            Some(MISSILE_COST * 2 + POISON_COST)
+        );
     }
 }
