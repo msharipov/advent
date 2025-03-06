@@ -45,14 +45,18 @@ pub struct Boss {
 }
 
 impl Boss {
-    pub fn parse(lines: &[&str]) -> Result<Self, sscanf::Error> {
-        let health = sscanf!(lines[0], "Hit Points: {u64}")?;
-        let damage = sscanf!(lines[1], "Damage: {u64}")?;
-        Ok(Boss {
+    pub fn new(health: u64, damage: u64) -> Self {
+        Boss {
             health,
             damage,
             poison: None,
-        })
+        }
+    }
+
+    pub fn parse(lines: &[&str]) -> Result<Self, sscanf::Error> {
+        let health = sscanf!(lines[0], "Hit Points: {u64}")?;
+        let damage = sscanf!(lines[1], "Damage: {u64}")?;
+        Ok(Boss::new(health, damage))
     }
 
     pub fn update_effects(&mut self) {
@@ -273,11 +277,7 @@ mod tests {
     #[test]
     fn boss_parse_test_1() {
         let lines = &["Hit Points: 44", "Damage: 12"];
-        let correct = Boss {
-            health: 44,
-            damage: 12,
-            poison: None,
-        };
+        let correct = Boss::new(44, 12);
         assert_eq!(Boss::parse(lines).unwrap(), correct);
     }
 
@@ -296,11 +296,7 @@ mod tests {
     #[test]
     fn lowest_mana_to_win_test_1() {
         let player = Player::new(15);
-        let boss = Boss {
-            health: 15,
-            damage: 1,
-            poison: None,
-        };
+        let boss = Boss::new(15, 1);
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(6), Some(53 * 4));
     }
@@ -308,11 +304,7 @@ mod tests {
     #[test]
     fn lowest_mana_to_win_test_2() {
         let player = Player::new(15);
-        let boss = Boss {
-            health: 12,
-            damage: 1,
-            poison: None,
-        };
+        let boss = Boss::new(12, 1);
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(2), None);
     }
@@ -320,11 +312,7 @@ mod tests {
     #[test]
     fn lowest_mana_to_win_test_3() {
         let player = Player::new(15);
-        let boss = Boss {
-            health: 15,
-            damage: 6,
-            poison: None,
-        };
+        let boss = Boss::new(15, 6);
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(5), Some(53 * 4 + 113));
     }
