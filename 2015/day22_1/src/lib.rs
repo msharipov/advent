@@ -26,6 +26,9 @@ const MISSILE_COST: u64 = 53;
 const MISSILE_DAMAGE: u64 = 4;
 const DRAIN_COST: u64 = 73;
 const DRAIN_DAMAGE: u64 = 2;
+const POISON_COST: u64 = 173;
+const POISON_DURATION: u64 = 6;
+const POISON_DAMAGE: u64 = 3;
 
 pub struct Player {
     health: u64,
@@ -38,7 +41,7 @@ pub struct Player {
 pub struct Boss {
     health: u64,
     damage: u64,
-    effects: Vec<Effect>,
+    poison: Option<Effect>,
 }
 
 impl Boss {
@@ -48,18 +51,31 @@ impl Boss {
         Ok(Boss {
             health,
             damage,
-            effects: vec![],
+            poison: None,
         })
     }
 
     pub fn update_effects(&mut self) {
-        let new_effects = vec![];
-        for effect in &mut self.effects {
-            match effect {
-                _ => todo!(),
+        if let Some(e) = &self.poison {
+            if let Effect::PoisonEffect(turns) = e {
+                if *turns > 0 {
+                    self.health -= min(self.health, POISON_DAMAGE);
+                }
+                if *turns > 1 {
+                    self.poison = Some(Effect::PoisonEffect(turns - 1))
+                } else {
+                    self.poison = None;
+                }
             }
         }
-        self.effects = new_effects;
+    }
+
+    pub fn apply_poison(&mut self) -> Result<(), ()> {
+        if self.poison.is_some() {
+            return Err(());
+        }
+        self.poison = Some(Effect::PoisonEffect(POISON_DURATION));
+        Ok(())
     }
 
     pub fn alive(&self) -> bool {
@@ -260,7 +276,7 @@ mod tests {
         let correct = Boss {
             health: 44,
             damage: 12,
-            effects: vec![],
+            poison: None,
         };
         assert_eq!(Boss::parse(lines).unwrap(), correct);
     }
@@ -283,7 +299,7 @@ mod tests {
         let boss = Boss {
             health: 15,
             damage: 1,
-            effects: vec![],
+            poison: None,
         };
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(6), Some(53 * 4));
@@ -295,7 +311,7 @@ mod tests {
         let boss = Boss {
             health: 12,
             damage: 1,
-            effects: vec![],
+            poison: None,
         };
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(2), None);
@@ -307,7 +323,7 @@ mod tests {
         let boss = Boss {
             health: 15,
             damage: 6,
-            effects: vec![],
+            poison: None,
         };
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(5), Some(53 * 4 + 113));
