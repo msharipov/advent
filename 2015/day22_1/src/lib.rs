@@ -258,7 +258,16 @@ fn recursive_step(
                 return None;
             }
         }
-        _ => todo!(),
+        Spell::Recharge => {
+            if state.player.mana < RECHARGE_COST {
+                return None;
+            }
+            state.player.mana -= RECHARGE_COST;
+            spent_mana += RECHARGE_COST;
+            if state.player.apply_recharge().is_err() {
+                return None;
+            }
+        }
     }
     state.player.reset_effects();
     // End of player's turn
@@ -281,6 +290,7 @@ fn recursive_step(
         Spell::MagicMissile,
         Spell::Drain,
         Spell::Poison,
+        Spell::Recharge,
     ];
     let mana_spent_results = spells.iter().filter_map(|spell| {
         recursive_step(
