@@ -10,7 +10,7 @@ pub enum Effect {
     RechargeEffect(u64),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Spell {
     MagicMissile,
     Drain,
@@ -33,6 +33,7 @@ const RECHARGE_COST: u64 = 229;
 const RECHARGE_DURATION: u64 = 5;
 const RECHARGE_AMOUNT: u64 = 101;
 
+#[derive(Debug)]
 pub struct Player {
     health: u64,
     mana: u64,
@@ -154,13 +155,13 @@ impl Player {
             match effect {
                 ShieldEffect(dur) => {
                     self.temp_armor = SHIELD_ARMOR;
-                    if *dur > 0 {
+                    if *dur > 1 {
                         new_effects.push(ShieldEffect(*dur - 1));
                     }
                 }
                 RechargeEffect(dur) => {
                     self.mana += RECHARGE_AMOUNT;
-                    if *dur > 0 {
+                    if *dur > 1 {
                         new_effects.push(RechargeEffect(*dur - 1));
                     }
                 }
@@ -179,7 +180,7 @@ impl Player {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct GameState {
     player: Player,
     boss: Boss,
@@ -190,8 +191,9 @@ impl GameState {
         GameState { player, boss }
     }
 
-    pub fn lowest_mana_to_win(&self, max_depth: u64) -> Option<u64> {
+    pub fn lowest_mana_to_win(&self, max_depth: u64) -> Option<(u64, Vec<Spell>)> {
         let mut lowest_mana = None;
+        let mut cheapest_spells = vec![];
         let spells = [
             Spell::Shield,
             Spell::MagicMissile,
@@ -201,20 +203,25 @@ impl GameState {
         ];
         let mana_spent_results = spells
             .iter()
-            .filter_map(|spell| recursive_step(self.clone(), 0, max_depth, spell.clone(), 0));
-        for mana_spent in mana_spent_results {
+            .filter_map(|spell| recursive_step(self.clone(), 0, max_depth, spell.clone(), 0, &[]));
+        for (mana_spent, used_spells) in mana_spent_results {
             match lowest_mana {
                 None => {
                     lowest_mana = Some(mana_spent);
+                    cheapest_spells = used_spells;
                 }
                 Some(mana) => {
                     if mana > mana_spent {
                         lowest_mana = Some(mana_spent);
+                        cheapest_spells = used_spells;
                     }
                 }
             }
         }
-        lowest_mana
+        match lowest_mana {
+            None => None,
+            Some(mana) => Some((mana, cheapest_spells)),
+        }
     }
 }
 
@@ -224,7 +231,8 @@ fn recursive_step(
     max_depth: u64,
     action: Spell,
     mut spent_mana: u64,
-) -> Option<u64> {
+    used_spells: &[Spell],
+) -> Option<(u64, Vec<Spell>)> {
     if cur_depth >= max_depth {
         return None;
     }
@@ -279,13 +287,15 @@ fn recursive_step(
             }
         }
     }
+    let mut used_spells = used_spells.to_vec();
+    used_spells.push(action);
     state.player.reset_effects();
     // End of player's turn
 
     state.player.update_effects();
     state.boss.update_effects();
     if !state.boss.alive() {
-        return Some(spent_mana);
+        return Some((spent_mana, used_spells));
     }
     state.player.take_damage(state.boss.damage);
     state.player.reset_effects();
@@ -309,21 +319,28 @@ fn recursive_step(
             max_depth,
             spell.clone(),
             spent_mana,
+            &used_spells,
         )
     });
-    for mana_spent in mana_spent_results {
+    let mut used_spells = vec![];
+    for (mana_spent, spells_sequence) in mana_spent_results {
         match lowest_mana {
             None => {
                 lowest_mana = Some(mana_spent);
+                used_spells = spells_sequence;
             }
             Some(mana) => {
                 if mana > mana_spent {
                     lowest_mana = Some(mana_spent);
+                    used_spells = spells_sequence;
                 }
             }
         }
     }
-    lowest_mana
+    match lowest_mana {
+        None => None,
+        Some(mana) => Some((mana, used_spells)),
+    }
 }
 
 #[cfg(test)]
@@ -354,7 +371,7 @@ mod tests {
         let player = Player::new(15);
         let boss = Boss::new(15, 1);
         let state = GameState { player, boss };
-        assert_eq!(state.lowest_mana_to_win(6), Some(53 * 4));
+        assert_eq!(state.lowest_mana_to_win(6).unwrap().0, 53 * 4);
     }
 
     #[test]
@@ -362,7 +379,7 @@ mod tests {
         let player = Player::new(15);
         let boss = Boss::new(14, 1);
         let state = GameState { player, boss };
-        assert_eq!(state.lowest_mana_to_win(2), None);
+        assert!(state.lowest_mana_to_win(2).is_none());
     }
 
     #[test]
@@ -371,8 +388,8 @@ mod tests {
         let boss = Boss::new(15, 6);
         let state = GameState { player, boss };
         assert_eq!(
-            state.lowest_mana_to_win(6),
-            Some(MISSILE_COST * 2 + POISON_COST)
+            state.lowest_mana_to_win(6).unwrap().0,
+            MISSILE_COST * 2 + POISON_COST
         );
     }
 }
