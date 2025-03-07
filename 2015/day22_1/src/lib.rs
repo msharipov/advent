@@ -192,7 +192,13 @@ impl GameState {
 
     pub fn lowest_mana_to_win(&self, max_depth: u64) -> Option<u64> {
         let mut lowest_mana = None;
-        let spells = [Spell::Shield, Spell::MagicMissile];
+        let spells = [
+            Spell::Shield,
+            Spell::MagicMissile,
+            Spell::Recharge,
+            Spell::Poison,
+            Spell::Drain,
+        ];
         let mana_spent_results = spells
             .iter()
             .filter_map(|spell| recursive_step(self.clone(), 0, max_depth, spell.clone(), 0));
@@ -354,7 +360,7 @@ mod tests {
     #[test]
     fn lowest_mana_to_win_test_2() {
         let player = Player::new(15);
-        let boss = Boss::new(12, 1);
+        let boss = Boss::new(14, 1);
         let state = GameState { player, boss };
         assert_eq!(state.lowest_mana_to_win(2), None);
     }
