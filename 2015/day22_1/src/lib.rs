@@ -64,16 +64,14 @@ impl Boss {
     }
 
     pub fn update_effects(&mut self) {
-        if let Some(e) = &self.poison {
-            if let Effect::PoisonEffect(turns) = e {
-                if *turns > 0 {
-                    self.health -= min(self.health, POISON_DAMAGE);
-                }
-                if *turns > 1 {
-                    self.poison = Some(Effect::PoisonEffect(turns - 1))
-                } else {
-                    self.poison = None;
-                }
+        if let Some(Effect::PoisonEffect(turns)) = &self.poison {
+            if *turns > 0 {
+                self.health -= min(self.health, POISON_DAMAGE);
+            }
+            if *turns > 1 {
+                self.poison = Some(Effect::PoisonEffect(turns - 1))
+            } else {
+                self.poison = None;
             }
         }
     }
