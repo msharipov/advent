@@ -216,10 +216,7 @@ impl GameState {
                 }
             }
         }
-        match lowest_mana {
-            None => None,
-            Some(mana) => Some((mana, cheapest_spells)),
-        }
+        lowest_mana.map(|mana| (mana, cheapest_spells))
     }
 }
 
@@ -335,10 +332,7 @@ fn recursive_step(
             }
         }
     }
-    match lowest_mana {
-        None => None,
-        Some(mana) => Some((mana, used_spells)),
-    }
+    lowest_mana.map(|mana| (mana, used_spells))
 }
 
 #[cfg(test)]
