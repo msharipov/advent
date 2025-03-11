@@ -96,12 +96,76 @@ pub struct Computer {
     iptr: u64,
 }
 
+pub struct OutOfBoundsError;
+
 impl Computer {
     pub fn new(instructions: &[Instruction]) -> Self {
         Computer {
             instructions: instructions.to_vec(),
             ..Computer::default()
         }
+    }
+
+    pub fn offset_iptr(&mut self, offset: i64) {
+        if offset > 0 {
+            self.iptr += offset as u64;
+        } else {
+            self.iptr -= (-offset) as u64
+        }
+    }
+
+    pub fn execute_next(&mut self) -> Result<(), OutOfBoundsError> {
+        use Instruction::*;
+        use Register::*;
+        let instruction = self
+            .instructions
+            .get(self.iptr as usize)
+            .ok_or(OutOfBoundsError)?;
+        match instruction {
+            Hlf(reg) => {
+                match reg {
+                    A => self.a /= 2,
+                    B => self.b /= 2,
+                }
+                self.iptr += 1;
+            }
+            Tpl(reg) => {
+                match reg {
+                    A => self.a *= 3,
+                    B => self.b *= 3,
+                }
+                self.iptr += 1;
+            }
+            Inc(reg) => {
+                match reg {
+                    A => self.a += 1,
+                    B => self.b += 1,
+                }
+                self.iptr += 1;
+            }
+            Jmp(offset) => {
+                self.offset_iptr(*offset);
+            }
+            Jie(reg, offset) => {
+                let reg = match reg {
+                    A => self.a,
+                    B => self.b,
+                };
+                if reg % 2 == 0 {
+                    self.offset_iptr(*offset);
+                }
+            }
+            Jio(reg, offset) => {
+                let reg = match reg {
+                    A => self.a,
+                    B => self.b,
+                };
+                if reg == 1 {
+                    self.offset_iptr(*offset);
+                }
+            }
+        }
+        Ok(())
     }
 }
 
