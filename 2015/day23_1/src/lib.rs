@@ -210,4 +210,24 @@ mod tests {
             .collect::<Result<Vec<_>, _>>();
         assert_eq!(parsed.unwrap_err(), "invalid instruction: \"inc c\"");
     }
+
+    #[test]
+    fn computer_test_1() {
+        use Instruction::*;
+        use Register::*;
+        let mut computer = Computer::new(&[
+            Inc(A),
+            Inc(B),
+            Tpl(A),
+            Inc(A),
+            Jie(A, 2),
+            Inc(B),
+            Hlf(A),
+            Jio(B, 2),
+            Inc(A),
+        ]);
+        while computer.execute_next().is_ok() {}
+        assert_eq!(computer.a, 2);
+        assert_eq!(computer.b, 1);
+    }
 }
