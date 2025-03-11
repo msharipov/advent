@@ -128,7 +128,6 @@ impl Computer {
             .instructions
             .get(self.iptr as usize)
             .ok_or(OutOfBoundsError)?;
-        println!("{instruction:?}");
         match instruction {
             Hlf(reg) => {
                 match reg {
