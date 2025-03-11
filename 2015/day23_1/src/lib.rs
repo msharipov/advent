@@ -17,7 +17,7 @@ pub enum Instruction {
 }
 
 impl Instruction {
-    fn parse(line: &str) -> Result<Self, String> {
+    pub fn parse(line: &str) -> Result<Self, String> {
         let hlf_parsed = sscanf!(line, "hlf {:/a|b/}", String);
         if let Ok(r) = hlf_parsed {
             if r == "a" {
@@ -128,6 +128,7 @@ impl Computer {
             .instructions
             .get(self.iptr as usize)
             .ok_or(OutOfBoundsError)?;
+        println!("{instruction:?}");
         match instruction {
             Hlf(reg) => {
                 match reg {
@@ -160,6 +161,8 @@ impl Computer {
                 };
                 if reg % 2 == 0 {
                     self.offset_iptr(*offset);
+                } else {
+                    self.iptr += 1;
                 }
             }
             Jio(reg, offset) => {
@@ -169,6 +172,8 @@ impl Computer {
                 };
                 if reg == 1 {
                     self.offset_iptr(*offset);
+                } else {
+                    self.iptr += 1;
                 }
             }
         }
