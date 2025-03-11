@@ -129,4 +129,21 @@ mod tests {
         let correct = vec![Hlf(A), Tpl(B), Inc(A), Jmp(-28), Jie(B, 4), Jio(A, -9)];
         assert_eq!(correct, parsed);
     }
+
+    #[test]
+    fn instruction_parse_test_2() {
+        let lines = &[
+            "hlf a",
+            "tpl b",
+            "inc c",
+            "jmp -28",
+            "jie b, +4",
+            "jio a, -9",
+        ];
+        let parsed = lines
+            .iter()
+            .map(|&line| Instruction::parse(line))
+            .collect::<Result<Vec<_>, _>>();
+        assert_eq!(parsed.unwrap_err(), "invalid instruction: \"inc c\"");
+    }
 }
