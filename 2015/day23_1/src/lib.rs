@@ -106,6 +106,13 @@ impl Computer {
         }
     }
 
+    pub fn read(&self, reg: Register) -> u64 {
+        match reg {
+            Register::A => self.a,
+            Register::B => self.b,
+        }
+    }
+
     pub fn offset_iptr(&mut self, offset: i64) {
         if offset > 0 {
             self.iptr += offset as u64;
