@@ -1,10 +1,10 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Register {
     A,
     B,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
     Hlf(Register),
     Tpl(Register),
@@ -20,4 +20,13 @@ pub struct Computer {
     b: u64,
     instructions: Vec<Instruction>,
     iptr: u64,
+}
+
+impl Computer {
+    pub fn new(instructions: &[Instruction]) -> Self {
+        Computer {
+            instructions: instructions.to_vec(),
+            ..Computer::default()
+        }
+    }
 }
