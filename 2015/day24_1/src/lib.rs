@@ -18,9 +18,9 @@ pub struct CannotPartition;
 pub fn partition_into_thirds(
     weights: BTreeSet<u64>,
 ) -> Result<BTreeSet<Partition<u64>>, CannotPartition> {
-    let equal_groups = groups_by_size(weights, NonZero::new(3).unwrap())?;
+    let mut equal_groups = groups_by_size(weights, NonZero::new(3).unwrap())?;
     let mut partitions_found = BTreeSet::new();
-    for first_group in &equal_groups {
+    for first_group in equal_groups.clone().iter() {
         let available_groups = equal_groups
             .iter()
             .filter(|group| group.is_disjoint(&first_group))
@@ -38,6 +38,7 @@ pub fn partition_into_thirds(
                 partitions_found.insert(new_partition);
             }
         }
+        equal_groups.remove(first_group);
     }
     if partitions_found.is_empty() {
         return Err(CannotPartition);
