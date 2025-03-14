@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{
     cmp::Ordering,
-    collections::{BTreeSet, HashSet},
+    collections::BTreeSet,
     num::{NonZero, ParseIntError},
 };
 
@@ -15,41 +15,28 @@ pub fn parse_weights(lines: &[&str]) -> Result<Vec<u64>, ParseIntError> {
 #[derive(Debug)]
 pub struct CannotPartition;
 
-pub fn partitions(
+pub fn partition_into_thirds(
     weights: BTreeSet<u64>,
-    groups: NonZero<u64>,
 ) -> Result<BTreeSet<Partition<u64>>, CannotPartition> {
-    if weights.is_empty() {
-        return Err(CannotPartition);
-    }
-    if groups.get() == 1 as u64 {
-        let partition = BTreeSet::from_iter([Subset::from_iter(weights)]);
-        return Ok(BTreeSet::from_iter([partition]));
-    }
-    let sum = weights.iter().sum::<u64>();
-    let group_sum = sum / groups;
-    if sum % groups != 0 || *(weights.iter().max().unwrap()) > group_sum {
-        return Err(CannotPartition);
-    }
+    let equal_groups = groups_by_size(weights, NonZero::new(3).unwrap())?;
     let mut partitions_found = BTreeSet::new();
-    for subset in weights.iter().cloned().powerset() {
-        if subset.iter().map(|&i| i).sum::<u64>() != group_sum {
-            continue;
-        }
-        let complement = weights
-            .difference(&BTreeSet::from_iter(subset.iter().cloned()))
-            .cloned()
-            .collect();
-        let sub_partitions = partitions(complement, NonZero::new(groups.get() - 1).unwrap());
-        if sub_partitions.is_err() {
-            continue;
-        }
-        let sub_partitions = sub_partitions.unwrap();
-        for mut subpart in sub_partitions {
-            let mut new_partition =
-                BTreeSet::from_iter([Subset::from_iter(subset.iter().cloned())]);
-            new_partition.append(&mut subpart);
-            partitions_found.insert(new_partition);
+    for first_group in &equal_groups {
+        let available_groups = equal_groups
+            .iter()
+            .filter(|group| group.is_disjoint(&first_group))
+            .collect_vec();
+        for &second_group in &available_groups {
+            let last_groups = available_groups
+                .iter()
+                .filter(|group| group.is_disjoint(&second_group))
+                .collect_vec();
+            for &last_group in last_groups {
+                let mut new_partition = Partition::new();
+                new_partition.insert(first_group.clone());
+                new_partition.insert(second_group.clone());
+                new_partition.insert(last_group.clone());
+                partitions_found.insert(new_partition);
+            }
         }
     }
     if partitions_found.is_empty() {
@@ -125,23 +112,20 @@ mod tests {
     }
 
     #[test]
-    fn partitions_test_1() {
+    fn partition_into_thirds_test_1() {
         let weights = BTreeSet::from_iter([1, 2, 3, 4, 5, 6]);
         let set_1_6 = Subset::from_iter([1, 6]);
         let set_2_5 = Subset::from_iter([2, 5]);
         let set_3_4 = Subset::from_iter([3, 4]);
         let partition = Partition::from_iter([set_1_6, set_2_5, set_3_4]);
         let correct = BTreeSet::from_iter([partition]);
-        assert_eq!(
-            partitions(weights, NonZero::new(3).unwrap()).unwrap(),
-            correct
-        );
+        assert_eq!(partition_into_thirds(weights).unwrap(), correct);
     }
 
     #[test]
-    fn partitions_test_2() {
+    fn partition_into_thirds_test_2() {
         let weights = BTreeSet::from_iter([1, 3, 4, 5, 9]);
-        assert!(partitions(weights, NonZero::new(2).unwrap()).is_err());
+        assert!(partition_into_thirds(weights).is_err());
     }
 
     #[test]
