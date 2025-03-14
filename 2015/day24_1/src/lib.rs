@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use std::{
     cmp::Ordering,
-    collections::BTreeSet,
+    collections::{BTreeSet, HashSet},
     num::{NonZero, ParseIntError},
 };
 
@@ -56,6 +56,29 @@ pub fn partitions(
         return Err(CannotPartition);
     }
     Ok(partitions_found)
+}
+
+pub fn groups_by_size(
+    weights: BTreeSet<u64>,
+    groups: NonZero<u64>,
+) -> Result<BTreeSet<Subset<u64>>, CannotPartition> {
+    if weights.is_empty() {
+        return Err(CannotPartition);
+    }
+    if groups.get() == 1 as u64 {
+        return Ok(Subset::from_iter([weights]));
+    }
+    let sum = weights.iter().sum::<u64>();
+    let group_sum = sum / groups;
+    if sum % groups != 0 || *(weights.iter().max().unwrap()) > group_sum {
+        return Err(CannotPartition);
+    }
+    let groups = weights
+        .iter()
+        .powerset()
+        .filter(|group| group.iter().map(|x| *x).sum::<u64>() == group_sum)
+        .map(|vec| BTreeSet::from_iter(vec.iter().map(|x| **x)));
+    Ok(BTreeSet::from_iter(groups))
 }
 
 pub fn first_group(partition: &Partition<u64>) -> &Subset<u64> {
@@ -128,5 +151,17 @@ mod tests {
         let set_3_4 = Subset::from_iter([3, 4]);
         let partition = Partition::from_iter([set_1_6, set_2_5, set_3_4]);
         assert_eq!(entanglement(&partition), 6);
+    }
+
+    #[test]
+    fn groups_by_size_test_1() {
+        let weights = BTreeSet::from_iter([1, 2, 3, 4, 5, 6]);
+        let set_1_6 = Subset::from_iter([1, 6]);
+        let set_2_5 = Subset::from_iter([2, 5]);
+        let set_3_4 = Subset::from_iter([3, 4]);
+        let set_1_2_4 = Subset::from_iter([1, 2, 4]);
+        let correct = BTreeSet::from_iter([set_1_6, set_2_5, set_3_4, set_1_2_4]);
+        let grouped = groups_by_size(weights, NonZero::new(3).unwrap());
+        assert_eq!(correct, grouped.unwrap());
     }
 }
