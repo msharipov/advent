@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use std::{
+    cmp::Ordering,
     collections::BTreeSet,
     num::{NonZero, ParseIntError},
 };
@@ -57,11 +58,31 @@ pub fn partitions(
     Ok(partitions_found)
 }
 
-pub fn entanglement(partition: &Partition<u64>) -> Option<u64> {
+pub fn first_group(partition: &Partition<u64>) -> &Subset<u64> {
+    let lowest_size = partition.iter().map(|group| group.len()).min().unwrap();
     partition
         .iter()
-        .map(|subset| subset.iter().product::<u64>())
-        .min()
+        .filter(|group| group.len() == lowest_size)
+        .sorted_by(|a, b| {
+            let diff = group_entanglement(a) as i64 - group_entanglement(b) as i64;
+            if diff < 0 {
+                return Ordering::Less;
+            } else if diff > 0 {
+                return Ordering::Greater;
+            } else {
+                return Ordering::Equal;
+            }
+        })
+        .next()
+        .unwrap()
+}
+
+pub fn group_entanglement(group: &Subset<u64>) -> u64 {
+    group.iter().product()
+}
+
+pub fn entanglement(partition: &Partition<u64>) -> u64 {
+    group_entanglement(first_group(partition))
 }
 
 #[cfg(test)]
@@ -106,6 +127,6 @@ mod tests {
         let set_2_5 = Subset::from_iter([2, 5]);
         let set_3_4 = Subset::from_iter([3, 4]);
         let partition = Partition::from_iter([set_1_6, set_2_5, set_3_4]);
-        assert_eq!(entanglement(&partition), Some(6));
+        assert_eq!(entanglement(&partition), 6);
     }
 }
