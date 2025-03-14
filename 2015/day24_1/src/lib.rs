@@ -1,5 +1,8 @@
 use itertools::Itertools;
-use std::{collections::BTreeSet, num::ParseIntError};
+use std::{
+    collections::BTreeSet,
+    num::{NonZero, ParseIntError},
+};
 
 type Subset<T> = BTreeSet<T>;
 type Partition<T> = BTreeSet<Subset<T>>;
@@ -13,12 +16,12 @@ pub struct CannotPartition;
 
 pub fn partitions(
     weights: BTreeSet<u64>,
-    groups: u64,
+    groups: NonZero<u64>,
 ) -> Result<BTreeSet<Partition<u64>>, CannotPartition> {
     if weights.is_empty() {
         return Err(CannotPartition);
     }
-    if groups <= 1 {
+    if groups.get() == 1 as u64 {
         let partition = BTreeSet::from_iter([Subset::from_iter(weights)]);
         return Ok(BTreeSet::from_iter([partition]));
     }
@@ -36,7 +39,7 @@ pub fn partitions(
             .difference(&BTreeSet::from_iter(subset.iter().cloned()))
             .cloned()
             .collect();
-        let sub_partitions = partitions(complement, groups - 1);
+        let sub_partitions = partitions(complement, NonZero::new(groups.get() - 1).unwrap());
         if sub_partitions.is_err() {
             continue;
         }
@@ -78,6 +81,9 @@ mod tests {
         let set_3_4 = Subset::from_iter([3, 4]);
         let partition = Partition::from_iter([set_1_6, set_2_5, set_3_4]);
         let correct = BTreeSet::from_iter([partition]);
-        assert_eq!(partitions(weights, 3).unwrap(), correct);
+        assert_eq!(
+            partitions(weights, NonZero::new(3).unwrap()).unwrap(),
+            correct
+        );
     }
 }
