@@ -57,6 +57,13 @@ pub fn partitions(
     Ok(partitions_found)
 }
 
+pub fn entanglement(partition: &Partition<u64>) -> Option<u64> {
+    partition
+        .iter()
+        .map(|subset| subset.iter().product::<u64>())
+        .min()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -91,5 +98,14 @@ mod tests {
     fn partitions_test_2() {
         let weights = BTreeSet::from_iter([1, 3, 4, 5, 9]);
         assert!(partitions(weights, NonZero::new(2).unwrap()).is_err());
+    }
+
+    #[test]
+    fn entanglement_test_1() {
+        let set_1_6 = Subset::from_iter([1, 6]);
+        let set_2_5 = Subset::from_iter([2, 5]);
+        let set_3_4 = Subset::from_iter([3, 4]);
+        let partition = Partition::from_iter([set_1_6, set_2_5, set_3_4]);
+        assert_eq!(entanglement(&partition), Some(6));
     }
 }
