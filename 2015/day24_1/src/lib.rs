@@ -86,4 +86,10 @@ mod tests {
             correct
         );
     }
+
+    #[test]
+    fn partitions_test_2() {
+        let weights = BTreeSet::from_iter([1, 3, 4, 5, 9]);
+        assert!(partitions(weights, NonZero::new(2).unwrap()).is_err());
+    }
 }
