@@ -83,6 +83,42 @@ pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
     sequences.len()
 }
 
+pub struct CannotInvert;
+
+pub fn invert_first(seq: &mut Vec<String>, repl: &Replacements) -> Result<(), CannotInvert> {
+    let mut inv_repl = invert_replacements(repl);
+    let mut e_inversions = HashMap::new();
+    for (k, v) in inv_repl.clone() {
+        if v == "e" {
+            e_inversions.insert(k.clone(), v);
+            inv_repl.remove(&k);
+        }
+    }
+    for inverse in &inv_repl {
+        let (pattern, replacement) = inverse;
+        let length = pattern.len();
+        for (i, win) in seq.windows(length).enumerate() {
+            if win == pattern {
+                seq[i] = replacement.clone();
+                seq.drain(i+1..i+length);
+                return Ok(());
+            }
+        }
+    }
+    for inverse in &e_inversions {
+        let (pattern, replacement) = inverse;
+        let length = pattern.len();
+        for (i, win) in seq.windows(length).enumerate() {
+            if win == pattern {
+                seq[i] = replacement.clone();
+                seq.drain(i+1..i+length);
+                return Ok(());
+            }
+        }
+    }
+    Err(CannotInvert)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -168,5 +204,32 @@ mod tests {
         let molecule = "ArHOTeTiCl";
         let correct = vec!["Ar", "H", "O", "Te", "Ti", "Cl"];
         assert_eq!(sequence_from_line(molecule), correct);
+    }
+
+    #[test]
+    fn invert_first_test_1() {
+        let mut lines = [
+            "Ar => NeCl",
+            "O => HO",
+            "O => ArTi",
+            "e => O",
+            "",
+            "HNeClTi",
+        ]
+        .into_iter();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let mut seq = parse_sequence(&mut lines).unwrap();
+        assert!(invert_first(&mut seq, &repl).is_ok());
+        assert_eq!(
+            &seq,
+            &vec!["H".to_owned(), "Ar".to_owned(), "Ti".to_owned()]
+        );
+        assert!(invert_first(&mut seq, &repl).is_ok());
+        assert_eq!(&seq, &vec!["H".to_owned(), "O".to_owned()]);
+        assert!(invert_first(&mut seq, &repl).is_ok());
+        assert_eq!(&seq, &vec!["O".to_owned()]);
+        assert!(invert_first(&mut seq, &repl).is_ok());
+        assert_eq!(&seq, &vec!["e".to_owned()]);
+        assert!(invert_first(&mut seq, &repl).is_err());
     }
 }
