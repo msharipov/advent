@@ -162,4 +162,11 @@ mod tests {
         };
         assert_eq!(correct, inv);
     }
+
+    #[test]
+    fn sequence_from_line_test_1() {
+        let molecule = "ArHOTeTiCl";
+        let correct = vec!["Ar", "H", "O", "Te", "Ti", "Cl"];
+        assert_eq!(sequence_from_line(molecule), correct);
+    }
 }
