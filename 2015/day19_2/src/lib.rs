@@ -83,6 +83,7 @@ pub fn count_new_sequences(seq: &[String], repl: &Replacements) -> usize {
     sequences.len()
 }
 
+#[derive(Debug)]
 pub struct CannotInvert;
 
 pub fn invert_first(seq: &mut Vec<String>, repl: &Replacements) -> Result<(), CannotInvert> {
@@ -100,7 +101,7 @@ pub fn invert_first(seq: &mut Vec<String>, repl: &Replacements) -> Result<(), Ca
         for (i, win) in seq.windows(length).enumerate() {
             if win == pattern {
                 seq[i] = replacement.clone();
-                seq.drain(i+1..i+length);
+                seq.drain(i + 1..i + length);
                 return Ok(());
             }
         }
@@ -111,12 +112,23 @@ pub fn invert_first(seq: &mut Vec<String>, repl: &Replacements) -> Result<(), Ca
         for (i, win) in seq.windows(length).enumerate() {
             if win == pattern {
                 seq[i] = replacement.clone();
-                seq.drain(i+1..i+length);
+                seq.drain(i + 1..i + length);
                 return Ok(());
             }
         }
     }
     Err(CannotInvert)
+}
+
+pub fn count_inversions(seq: &mut Vec<String>, repl: &Replacements) -> Result<u64, CannotInvert> {
+    let mut count = 0;
+    while seq != &vec!["e".to_owned()] {
+        if invert_first(seq, repl).is_err() {
+            return Err(CannotInvert);
+        }
+        count += 1;
+    }
+    Ok(count)
 }
 
 #[cfg(test)]
@@ -231,5 +243,37 @@ mod tests {
         assert!(invert_first(&mut seq, &repl).is_ok());
         assert_eq!(&seq, &vec!["e".to_owned()]);
         assert!(invert_first(&mut seq, &repl).is_err());
+    }
+
+    #[test]
+    fn count_inversions_test_1() {
+        let mut lines = [
+            "Ar => NeCl",
+            "O => HO",
+            "O => ArTi",
+            "e => O",
+            "",
+            "HNeClTi",
+        ]
+        .into_iter();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let mut seq = parse_sequence(&mut lines).unwrap();
+        assert_eq!(count_inversions(&mut seq, &repl).unwrap(), 4);
+    }
+
+    #[test]
+    fn count_inversions_test_2() {
+        let mut lines = [
+            "Ar => NeCl",
+            "O => HTe",
+            "O => ArTi",
+            "e => O",
+            "",
+            "HNeClTi",
+        ]
+        .into_iter();
+        let repl = parse_replacements(&mut lines).unwrap();
+        let mut seq = parse_sequence(&mut lines).unwrap();
+        assert!(count_inversions(&mut seq, &repl).is_err());
     }
 }
