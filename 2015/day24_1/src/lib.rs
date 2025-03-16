@@ -23,12 +23,12 @@ pub fn partition_into_thirds(
     for first_group in equal_groups.clone().iter() {
         let available_groups = equal_groups
             .iter()
-            .filter(|group| group.is_disjoint(&first_group))
+            .filter(|group| group.is_disjoint(first_group))
             .collect_vec();
         for &second_group in &available_groups {
             let last_groups = available_groups
                 .iter()
-                .filter(|group| group.is_disjoint(&second_group))
+                .filter(|group| group.is_disjoint(second_group))
                 .collect_vec();
             for &last_group in last_groups {
                 let mut new_partition = Partition::new();
