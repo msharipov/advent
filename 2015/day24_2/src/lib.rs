@@ -61,7 +61,7 @@ pub fn groups_by_size(
     if weights.is_empty() {
         return Err(CannotPartition);
     }
-    if groups.get() == 1 as u64 {
+    if groups.get() == 1_u64 {
         return Ok(Subset::from_iter([weights]));
     }
     let sum = weights.iter().sum::<u64>();
