@@ -21,17 +21,17 @@ pub fn lowest_entanglement(weights: BTreeSet<u64>) -> Result<u64, CannotPartitio
     for first_group in equal_groups.clone().iter() {
         let second_groups = equal_groups
             .iter()
-            .filter(|group| group.is_disjoint(&first_group))
+            .filter(|group| group.is_disjoint(first_group))
             .collect_vec();
         for &second_group in &second_groups {
             let third_groups = second_groups
                 .iter()
-                .filter(|group| group.is_disjoint(&second_group))
+                .filter(|group| group.is_disjoint(second_group))
                 .collect_vec();
             for &&third_group in &third_groups {
                 let fourth_groups = third_groups
                     .iter()
-                    .filter(|group| group.is_disjoint(&third_group))
+                    .filter(|group| group.is_disjoint(third_group))
                     .collect_vec();
                 for &&fourth_group in fourth_groups {
                     let mut new_partition = Partition::new();
