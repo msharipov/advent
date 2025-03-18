@@ -72,7 +72,7 @@ pub fn groups_by_size(
     let groups = weights
         .iter()
         .powerset()
-        .filter(|group| group.iter().map(|x| *x).sum::<u64>() == group_sum)
+        .filter(|group| group.iter().cloned().sum::<u64>() == group_sum)
         .map(|vec| BTreeSet::from_iter(vec.iter().map(|x| **x)));
     Ok(BTreeSet::from_iter(groups))
 }
