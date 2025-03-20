@@ -1,6 +1,5 @@
 use itertools::Itertools;
 use std::{
-    cmp::Ordering,
     collections::BTreeSet,
     num::{NonZero, ParseIntError},
 };
@@ -76,13 +75,7 @@ pub fn first_group(partition: &Partition<u64>) -> &Subset<u64> {
         .filter(|group| group.len() == lowest_size)
         .sorted_by(|a, b| {
             let diff = group_entanglement(a) as i64 - group_entanglement(b) as i64;
-            if diff < 0 {
-                return Ordering::Less;
-            } else if diff > 0 {
-                return Ordering::Greater;
-            } else {
-                return Ordering::Equal;
-            }
+            diff.cmp(&0)
         })
         .next()
         .unwrap()
