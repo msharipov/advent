@@ -27,6 +27,10 @@ pub fn parse_moves(line: &str) -> Result<Vec<Move>, sscanf::Error> {
         .collect()
 }
 
+pub fn taxicab_distance(point_a: (i64, i64), point_b: (i64, i64)) -> u64 {
+    point_a.0.abs_diff(point_b.0) + point_a.1.abs_diff(point_b.1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -52,5 +56,10 @@ mod tests {
         let line = "R3, L8, L2, R4";
         let correct = vec![R(3), L(8), L(2), R(4)];
         assert_eq!(parse_moves(&line).unwrap(), correct);
+    }
+
+    #[test]
+    fn taxicab_distance_test_1() {
+        assert_eq!(taxicab_distance((-8, 3), (1, -1)), 13);
     }
 }
