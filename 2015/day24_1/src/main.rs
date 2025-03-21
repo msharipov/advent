@@ -9,7 +9,7 @@ fn main() {
     let parts = partition_into_thirds(weights).unwrap();
     let lowest = parts
         .iter()
-        .map(|part| entanglement(part))
+        .map(entanglement)
         .min()
         .unwrap();
     println!("Lowest entanglement: {lowest}");
