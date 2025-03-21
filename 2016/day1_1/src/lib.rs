@@ -20,6 +20,13 @@ impl FromStr for Move {
     }
 }
 
+pub fn parse_moves(line: &str) -> Result<Vec<Move>, sscanf::Error> {
+    line.split(',')
+        .map(str::trim)
+        .map(str::parse::<Move>)
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,5 +44,13 @@ mod tests {
     #[test]
     fn move_parse_test_3() {
         assert!("A45".parse::<Move>().is_err());
+    }
+
+    #[test]
+    fn parse_moves_test_1() {
+        use Move::{L, R};
+        let line = "R3, L8, L2, R4";
+        let correct = vec![R(3), L(8), L(2), R(4)];
+        assert_eq!(parse_moves(&line).unwrap(), correct);
     }
 }
