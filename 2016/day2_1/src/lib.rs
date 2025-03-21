@@ -6,7 +6,7 @@ pub enum Move {
     Left,
 }
 
-pub fn moves_from_lines(line: &str) -> Result<Vec<Move>, String> {
+pub fn moves_from_line(line: &str) -> Result<Vec<Move>, String> {
     use Move::{Down, Left, Right, Up};
     let mut moves = vec![];
     for c in line.chars() {
@@ -19,6 +19,25 @@ pub fn moves_from_lines(line: &str) -> Result<Vec<Move>, String> {
         }
     }
     Ok(moves)
+}
+
+pub fn get_code(lines: &[&str]) -> Result<String, String> {
+    let mut code = String::default();
+    let mut kp = Keypad::default();
+    for line in lines {
+        let moves = moves_from_line(line)?;
+        for m in moves {
+            use Move::*;
+            match m {
+                Up => kp.up(),
+                Right => kp.right(),
+                Down => kp.down(),
+                Left => kp.left(),
+            }
+        }
+        code.push_str(kp.0.to_string().as_str());
+    }
+    Ok(code)
 }
 
 pub struct Keypad(u64);
@@ -82,6 +101,12 @@ mod tests {
         use Move::*;
         let line = "ULLDLRD";
         let correct = vec![Up, Left, Left, Down, Left, Right, Down];
-        assert_eq!(moves_from_lines(&line), Ok(correct));
+        assert_eq!(moves_from_line(&line), Ok(correct));
+    }
+
+    #[test]
+    fn get_code_test_1() {
+        let lines = ["UUR", "DRDLU", "DLLR"];
+        assert_eq!(get_code(&lines), Ok("358".to_owned()));
     }
 }
