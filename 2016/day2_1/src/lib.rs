@@ -1,3 +1,26 @@
+#[derive(Debug, PartialEq)]
+pub enum Move {
+    Up,
+    Right,
+    Down,
+    Left,
+}
+
+pub fn moves_from_lines(line: &str) -> Result<Vec<Move>, String> {
+    use Move::{Down, Left, Right, Up};
+    let mut moves = vec![];
+    for c in line.chars() {
+        match c {
+            'U' => moves.push(Up),
+            'R' => moves.push(Right),
+            'D' => moves.push(Down),
+            'L' => moves.push(Left),
+            _ => return Err("invalid character '{c}'".to_owned()),
+        }
+    }
+    Ok(moves)
+}
+
 pub struct Keypad(u64);
 
 impl Default for Keypad {
@@ -52,5 +75,13 @@ mod tests {
         kp.left();
         kp.down();
         assert_eq!(kp.0, 8);
+    }
+
+    #[test]
+    fn moves_from_lines_test_1() {
+        use Move::*;
+        let line = "ULLDLRD";
+        let correct = vec![Up, Left, Left, Down, Left, Right, Down];
+        assert_eq!(moves_from_lines(&line), Ok(correct));
     }
 }
