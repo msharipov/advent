@@ -17,7 +17,7 @@ mod tests {
 
     #[test]
     fn parse_sides_test_1() {
-        assert_eq!(parse_sides(" 123 456  78").unwrap(), [123, 456, 78]);
+        assert_eq!(parse_sides("  810  679   10").unwrap(), [810, 679, 10]);
     }
 
     #[test]
