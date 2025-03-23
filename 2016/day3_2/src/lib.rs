@@ -86,4 +86,18 @@ mod tests {
         ];
         assert_eq!(sides.unwrap(), correct);
     }
+
+    #[test]
+    fn parse_all_triangles_test_2() {
+        let lines = [" 101  201  301", " 102 202 302"];
+        let sides = parse_all_triangles(&lines);
+        assert!(matches!(sides.unwrap_err(), BlockParseError::BlockError));
+    }
+
+    #[test]
+    fn parse_all_triangles_test_3() {
+        let lines = [" 101  201  301", " 102 202 302", " 103 303"];
+        let sides = parse_all_triangles(&lines);
+        assert!(matches!(sides.unwrap_err(), BlockParseError::LineError(_)));
+    }
 }
