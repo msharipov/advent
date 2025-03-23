@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use day1_1::{hq_location, parse_moves, taxicab_distance};
+use day1_2::{hq_location, parse_moves, taxicab_distance};
 
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");

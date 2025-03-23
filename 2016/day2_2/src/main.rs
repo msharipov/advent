@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use day2_1::get_code;
+use day2_2::get_code;
 
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");
