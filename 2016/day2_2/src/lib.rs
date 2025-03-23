@@ -35,7 +35,7 @@ pub fn get_code(lines: &[&str]) -> Result<String, String> {
                 Left => kp.left(),
             }
         }
-        code.push_str(kp.0.to_string().as_str());
+        code.push(kp.0);
     }
     Ok(code)
 }
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn get_code_test_1() {
-        let lines = ["UUR", "DRDLU", "DLLR"];
-        assert_eq!(get_code(&lines), Ok("358".to_owned()));
+        let lines = ["UUR", "DRDLU", "DLLR", "RRDDL"];
+        assert_eq!(get_code(&lines), Ok("136B".to_owned()));
     }
 }
