@@ -17,6 +17,10 @@ impl FromStr for Room {
     }
 }
 
+pub fn parse_rooms(lines: &[&str]) -> Result<Vec<Room>, sscanf::Error> {
+    lines.iter().map(|&line| line.parse::<Room>()).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
