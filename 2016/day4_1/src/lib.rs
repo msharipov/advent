@@ -33,6 +33,10 @@ impl Room {
             .map(|(k, _)| k)
             .collect()
     }
+
+    pub fn is_valid(&self) -> bool {
+        self.checksum() == self.checksum
+    }
 }
 
 pub fn parse_rooms(lines: &[&str]) -> Result<Vec<Room>, sscanf::Error> {
