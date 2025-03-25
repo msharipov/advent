@@ -1,15 +1,19 @@
 use sscanf::sscanf;
 
 pub fn supports_tls(ipv7: &str) -> Result<bool, sscanf::Error> {
-    let (first, _, last) = sscanf!(ipv7, "{str}[{str}]{str}")?;
-    for window in first.chars().collect::<Vec<_>>().windows(4) {
-        if window[0] == window[3] && window[1] == window[2] && window[0] != window[1] {
-            return Ok(true);
-        }
+    let mut parts = vec![];
+    let mut current = ipv7;
+    while sscanf!(current, "{str}[{str}]{str}").is_ok() {
+        let (first, _, last) = sscanf!(current, "{str}[{str}]{str}")?;
+        parts.push(first.to_owned());
+        current = last;
     }
-    for window in last.chars().collect::<Vec<_>>().windows(4) {
-        if window[0] == window[3] && window[1] == window[2] && window[0] != window[1] {
-            return Ok(true);
+    parts.push(current.to_owned());
+    for part in parts {
+        for window in part.chars().collect::<Vec<_>>().windows(4) {
+            if window[0] == window[3] && window[1] == window[2] && window[0] != window[1] {
+                return Ok(true);
+            }
         }
     }
     Ok(false)
@@ -27,5 +31,10 @@ mod tests {
     #[test]
     fn supports_tls_test_2() {
         assert!(supports_tls("bbttb[fdgbfg]qwer").unwrap());
+    }
+
+    #[test]
+    fn supports_tls_test_3() {
+        assert!(supports_tls("verta[sdff]eerre[nmredx]adewet").unwrap());
     }
 }
