@@ -34,6 +34,10 @@ impl Room {
             .collect()
     }
 
+    pub fn sector(&self) -> u32 {
+        self.id
+    }
+
     pub fn is_valid(&self) -> bool {
         self.checksum() == self.checksum
     }
