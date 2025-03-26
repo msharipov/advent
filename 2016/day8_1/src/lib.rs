@@ -24,7 +24,7 @@ impl Screen {
     }
 
     fn rotate_row(&mut self, y: usize, len: usize) {
-        let old_row = self.pixels[y].clone();
+        let old_row = self.pixels[y];
         for x in 0..50 {
             self.pixels[y][(x + len) % 50] = old_row[x];
         }
