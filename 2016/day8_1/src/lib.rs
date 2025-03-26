@@ -23,9 +23,17 @@ impl Screen {
         }
     }
 
+    fn rotate_row(&mut self, y: usize, len: usize) {
+        let old_row = self.pixels[y].clone();
+        for x in 0..50 {
+            self.pixels[y][(x + len) % 50] = old_row[x];
+        }
+    }
+
     pub fn apply_instruction(&mut self, inst: &Instruction) {
         match *inst {
             Instruction::Rect(a, b) => self.rect(a, b),
+            Instruction::RotateRow(a, b) => self.rotate_row(a, b),
             _ => todo!(),
         };
     }
@@ -99,6 +107,22 @@ mod tests {
         for x in 0..50 {
             for y in 0..6 {
                 if x < 8 && y < 2 {
+                    assert!(screen.pixels[y][x]);
+                } else {
+                    assert!(!screen.pixels[y][x]);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn screen_rotate_row_test_1() {
+        let mut screen = Screen::default();
+        screen.apply_instruction(&Instruction::Rect(8, 2));
+        screen.apply_instruction(&Instruction::RotateRow(0, 3));
+        for x in 0..50 {
+            for y in 0..6 {
+                if (y == 0 && x >= 3 && x < 11) || (y == 1 && x < 8) {
                     assert!(screen.pixels[y][x]);
                 } else {
                     assert!(!screen.pixels[y][x]);
