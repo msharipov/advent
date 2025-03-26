@@ -25,15 +25,15 @@ impl Screen {
 
     fn rotate_row(&mut self, y: usize, len: usize) {
         let old_row = self.pixels[y];
-        for x in 0..50 {
-            self.pixels[y][(x + len) % 50] = old_row[x];
+        for (x, old_pixel) in old_row.into_iter().enumerate() {
+            self.pixels[y][(x + len) % 50] = old_pixel;
         }
     }
 
     fn rotate_col(&mut self, x: usize, len: usize) {
         let old_col = self.pixels.iter().map(|row| row[x]).collect::<Vec<bool>>();
-        for y in 0..6 {
-            self.pixels[(y + len) % 6][x] = old_col[y];
+        for (y, old_pixel) in old_col.into_iter().enumerate() {
+            self.pixels[(y + len) % 6][x] = old_pixel;
         }
     }
 
