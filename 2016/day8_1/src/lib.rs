@@ -14,6 +14,23 @@ impl Default for Screen {
     }
 }
 
+impl Screen {
+    fn rect(&mut self, a: usize, b: usize) {
+        for x in 0..a {
+            for y in 0..b {
+                self.pixels[y][x] = true;
+            }
+        }
+    }
+
+    pub fn apply_instruction(&mut self, inst: &Instruction) {
+        match *inst {
+            Instruction::Rect(a, b) => self.rect(a, b),
+            _ => todo!(),
+        };
+    }
+}
+
 #[derive(Debug, PartialEq)]
 pub enum Instruction {
     Rect(usize, usize),
@@ -73,5 +90,20 @@ mod tests {
     fn instruction_from_str_test_4() {
         let line = "rotate column y=22 by 2";
         assert!(line.parse::<Instruction>().is_err());
+    }
+
+    #[test]
+    fn screen_rect_test_1() {
+        let mut screen = Screen::default();
+        screen.apply_instruction(&Instruction::Rect(8, 2));
+        for x in 0..50 {
+            for y in 0..6 {
+                if x < 8 && y < 2 {
+                    assert!(screen.pixels[y][x]);
+                } else {
+                    assert!(!screen.pixels[y][x]);
+                }
+            }
+        }
     }
 }
