@@ -44,6 +44,10 @@ impl Screen {
             Instruction::RotateCol(a, b) => self.rotate_col(a, b),
         };
     }
+
+    pub fn total_on(&self) -> u64 {
+        self.pixels.iter().flatten().filter(|&&x| x).count() as u64
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -152,5 +156,12 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn screen_total_on_test_1() {
+        let mut screen = Screen::default();
+        screen.apply_instruction(&Instruction::Rect(17, 3));
+        assert_eq!(screen.total_on(), 51);
     }
 }
