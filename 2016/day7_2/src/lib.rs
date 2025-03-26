@@ -50,10 +50,11 @@ pub fn supports_ssl(ipv7: &str) -> Result<bool, sscanf::Error> {
     }
     for part in in_brackets {
         for window in part.chars().collect::<Vec<_>>().windows(3) {
-            if window[0] == window[2] && window[0] != window[1] {
-                if abas.contains(&vec![window[1], window[0], window[1]]) {
-                    return Ok(true);
-                }
+            if window[0] == window[2]
+                && window[0] != window[1]
+                && abas.contains(&vec![window[1], window[0], window[1]])
+            {
+                return Ok(true);
             }
         }
     }
