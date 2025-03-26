@@ -30,11 +30,18 @@ impl Screen {
         }
     }
 
+    fn rotate_col(&mut self, x: usize, len: usize) {
+        let old_col = self.pixels.iter().map(|row| row[x]).collect::<Vec<bool>>();
+        for y in 0..6 {
+            self.pixels[(y + len) % 6][x] = old_col[y];
+        }
+    }
+
     pub fn apply_instruction(&mut self, inst: &Instruction) {
         match *inst {
             Instruction::Rect(a, b) => self.rect(a, b),
             Instruction::RotateRow(a, b) => self.rotate_row(a, b),
-            _ => todo!(),
+            Instruction::RotateCol(a, b) => self.rotate_col(a, b),
         };
     }
 }
@@ -123,6 +130,22 @@ mod tests {
         for x in 0..50 {
             for y in 0..6 {
                 if (y == 0 && x >= 3 && x < 11) || (y == 1 && x < 8) {
+                    assert!(screen.pixels[y][x]);
+                } else {
+                    assert!(!screen.pixels[y][x]);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn screen_rotate_col_test_1() {
+        let mut screen = Screen::default();
+        screen.apply_instruction(&Instruction::Rect(8, 5));
+        screen.apply_instruction(&Instruction::RotateCol(3, 3));
+        for x in 0..50 {
+            for y in 0..6 {
+                if (x < 8 && x != 3 && y != 5) || (x == 3 && y != 2) {
                     assert!(screen.pixels[y][x]);
                 } else {
                     assert!(!screen.pixels[y][x]);
