@@ -1,4 +1,3 @@
-use core::slice::SlicePattern;
 use std::collections::HashMap;
 
 use sscanf::sscanf;
@@ -54,6 +53,27 @@ pub fn parse_instructions(lines: &[&str]) -> Result<(Vec<Initial>, Transfers), s
         return Err(sscanf::Error::MatchFailed);
     }
     Ok((initials, transfers))
+}
+
+pub fn set_up_bots(initial: &[Initial]) -> HashMap<u32, Bot> {
+    let mut bots = HashMap::new();
+    for instruction in initial {
+        let &(value, bot) = instruction;
+        match bots.get_mut(&bot) {
+            None => {
+                bots.insert(
+                    bot,
+                    Bot {
+                        numbers: vec![value],
+                    },
+                );
+            }
+            Some(b) => {
+                b.give(value);
+            }
+        }
+    }
+    bots
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -115,5 +135,20 @@ mod tests {
             "value 10 goes to bot 5",
         ];
         assert!(parse_instructions(&lines).is_err());
+    }
+
+    #[test]
+    fn set_up_bots_test_1() {
+        let mut correct = HashMap::new();
+        correct.insert(
+            15,
+            Bot {
+                numbers: vec![1, 4],
+            },
+        );
+        correct.insert(3, Bot { numbers: vec![10] });
+        correct.insert(8, Bot { numbers: vec![11] });
+        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
+        assert_eq!(set_up_bots(&initials), correct);
     }
 }
