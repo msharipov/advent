@@ -1,3 +1,4 @@
+use core::slice::SlicePattern;
 use std::collections::HashMap;
 
 use sscanf::sscanf;
@@ -53,6 +54,32 @@ pub fn parse_instructions(lines: &[&str]) -> Result<(Vec<Initial>, Transfers), s
         return Err(sscanf::Error::MatchFailed);
     }
     Ok((initials, transfers))
+}
+
+#[derive(Debug, PartialEq, Default)]
+pub struct Bot {
+    numbers: Vec<u32>,
+}
+
+impl Bot {
+    fn has_two(&self) -> bool {
+        self.numbers.len() == 2
+    }
+
+    fn numbers(&self) -> &[u32] {
+        self.numbers.as_slice()
+    }
+
+    fn take_numbers(&mut self) -> Vec<u32> {
+        let temp = self.numbers.clone();
+        self.numbers = vec![];
+        temp
+    }
+
+    fn give(&mut self, num: u32) {
+        self.numbers.push(num);
+        self.numbers.sort();
+    }
 }
 
 #[cfg(test)]
