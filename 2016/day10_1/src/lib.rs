@@ -5,7 +5,7 @@ use sscanf::sscanf;
 // value => initial bot
 type Initial = (u32, u32);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Hash, Eq, Clone)]
 pub enum Destination {
     Bot(u32),
     Output(u32),
@@ -76,24 +76,81 @@ pub fn set_up_bots(initial: &[Initial]) -> HashMap<u32, Bot> {
     bots
 }
 
+pub fn next_state(current: &HashMap<u32, Bot>, transfers: &Transfers) -> HashMap<u32, Bot> {
+    let mut new_bots: HashMap<u32, Bot> = HashMap::new();
+    for (i, bot) in current.into_iter() {
+        let (low, high) = transfers
+            .get(i)
+            .expect("missing transfer instruction")
+            .to_owned();
+        if bot.has_two() {
+            if !new_bots.contains_key(i) {
+                new_bots.insert(*i, Bot::default());
+            }
+            let numbers = bot.numbers();
+            if let Destination::Bot(low_bot) = low {
+                match new_bots.get_mut(&low_bot) {
+                    Some(new_bot) => {
+                        new_bot.give(numbers[0]);
+                    }
+                    None => {
+                        let new_bot = Bot {
+                            numbers: vec![numbers[0]],
+                        };
+                        new_bots.insert(low_bot, new_bot);
+                    }
+                }
+            }
+            if let Destination::Bot(high_bot) = high {
+                match new_bots.get_mut(&high_bot) {
+                    Some(new_bot) => {
+                        new_bot.give(numbers[1]);
+                    }
+                    None => {
+                        let new_bot = Bot {
+                            numbers: vec![numbers[1]],
+                        };
+                        new_bots.insert(high_bot, new_bot);
+                    }
+                }
+            }
+        } else {
+            match new_bots.get_mut(i) {
+                Some(new_bot) => {
+                    if !bot.numbers().is_empty() {
+                        new_bot.give(bot.numbers()[0]);
+                    }
+                }
+                None => {
+                    new_bots.insert(
+                        *i,
+                        Bot {
+                            numbers: bot.numbers().to_vec(),
+                        },
+                    );
+                }
+            }
+        }
+    }
+    new_bots
+}
+
 #[derive(Debug, PartialEq, Default)]
 pub struct Bot {
     numbers: Vec<u32>,
 }
 
 impl Bot {
+    pub fn default() -> Self {
+        Bot { numbers: vec![] }
+    }
+
     fn has_two(&self) -> bool {
         self.numbers.len() == 2
     }
 
     fn numbers(&self) -> &[u32] {
         self.numbers.as_slice()
-    }
-
-    fn take_numbers(&mut self) -> Vec<u32> {
-        let temp = self.numbers.clone();
-        self.numbers = vec![];
-        temp
     }
 
     fn give(&mut self, num: u32) {
@@ -150,5 +207,38 @@ mod tests {
         correct.insert(8, Bot { numbers: vec![11] });
         let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
         assert_eq!(set_up_bots(&initials), correct);
+    }
+
+    #[test]
+    fn next_state_test_1() {
+        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
+        let mut transfers = Transfers::new();
+        transfers.insert(15, (Destination::Bot(3), Destination::Bot(8)));
+        transfers.insert(3, (Destination::Bot(8), Destination::Output(3)));
+        transfers.insert(8, (Destination::Output(10), Destination::Bot(12)));
+        let next_1 = HashMap::<u32, Bot>::from_iter([
+            (15, Bot { numbers: vec![] }),
+            (
+                8,
+                Bot {
+                    numbers: vec![4, 11],
+                },
+            ),
+            (
+                3,
+                Bot {
+                    numbers: vec![1, 10],
+                },
+            ),
+        ]);
+        let initial = set_up_bots(&initials);
+        assert_eq!(next_state(&initial, &transfers), next_1);
+        let next_2 = HashMap::<u32, Bot>::from_iter([
+            (15, Bot { numbers: vec![] }),
+            (8, Bot { numbers: vec![1] }),
+            (3, Bot { numbers: vec![] }),
+            (12, Bot { numbers: vec![11] }),
+        ]);
+        assert_eq!(next_state(&next_1, &transfers), next_2);
     }
 }
