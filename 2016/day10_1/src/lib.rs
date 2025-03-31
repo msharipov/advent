@@ -141,10 +141,6 @@ pub struct Bot {
 }
 
 impl Bot {
-    pub fn default() -> Self {
-        Bot { numbers: vec![] }
-    }
-
     fn has_two(&self) -> bool {
         self.numbers.len() == 2
     }
