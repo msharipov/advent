@@ -166,6 +166,16 @@ pub fn find_bot(bots: &Bots, low: u32, high: u32) -> Option<u32> {
     None
 }
 
+pub fn first_bot_with_numbers(init: &[Initial], transfers: &Transfers, low: u32, high: u32) -> u32 {
+    let mut state = set_up_bots(init);
+    loop {
+        if let Some(bot) = find_bot(&state, low, high) {
+            return bot;
+        }
+        state = next_state(&state, transfers);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -261,5 +271,15 @@ mod tests {
         let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
         let initial = set_up_bots(&initials);
         assert_eq!(find_bot(&initial, 8, 4), None);
+    }
+
+    #[test]
+    fn first_bot_with_numbers_test_1() {
+        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
+        let mut transfers = Transfers::new();
+        transfers.insert(15, (Destination::Bot(3), Destination::Bot(8)));
+        transfers.insert(3, (Destination::Bot(8), Destination::Output(3)));
+        transfers.insert(8, (Destination::Output(10), Destination::Bot(12)));
+        assert_eq!(first_bot_with_numbers(&initials, &transfers, 1, 10), 3);
     }
 }
