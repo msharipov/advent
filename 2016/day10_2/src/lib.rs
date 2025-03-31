@@ -112,11 +112,11 @@ pub fn next_state(current: &State, transfers: &Transfers) -> State {
     let mut outputs = current.outputs.clone();
     for (i, bot) in &current.bots {
         let (low, high) = transfers
-            .get(&i)
+            .get(i)
             .expect("missing transfer instruction")
             .to_owned();
         if bot.has_two() {
-            if !new_bots.contains_key(&i) {
+            if !new_bots.contains_key(i) {
                 new_bots.insert(*i, Bot::default());
             }
             let numbers = bot.numbers();
@@ -153,7 +153,7 @@ pub fn next_state(current: &State, transfers: &Transfers) -> State {
                 }
             }
         } else {
-            match new_bots.get_mut(&i) {
+            match new_bots.get_mut(i) {
                 Some(new_bot) => {
                     if !bot.numbers().is_empty() {
                         new_bot.give(bot.numbers()[0]);
@@ -185,11 +185,11 @@ pub fn find_bot(state: &State, low: u32, high: u32) -> Option<u32> {
     None
 }
 
-pub fn first_bot_with_numbers(init: &[Initial], transfers: &Transfers, low: u32, high: u32) -> u32 {
+pub fn get_outputs(init: &[Initial], transfers: &Transfers, outputs: &[u32]) -> Vec<u32> {
     let mut state = set_up_bots(init);
     loop {
-        if let Some(bot) = find_bot(&state, low, high) {
-            return bot;
+        if outputs.iter().all(|out| state.outputs.contains_key(out)) {
+            return outputs.iter().map(|out| state.outputs[out]).collect();
         }
         state = next_state(&state, transfers);
     }
@@ -300,15 +300,5 @@ mod tests {
         let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
         let initial = set_up_bots(&initials);
         assert_eq!(find_bot(&initial, 8, 4), None);
-    }
-
-    #[test]
-    fn first_bot_with_numbers_test_1() {
-        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
-        let mut transfers = Transfers::new();
-        transfers.insert(15, (Destination::Bot(3), Destination::Bot(8)));
-        transfers.insert(3, (Destination::Bot(8), Destination::Output(3)));
-        transfers.insert(8, (Destination::Output(10), Destination::Bot(12)));
-        assert_eq!(first_bot_with_numbers(&initials, &transfers, 1, 10), 3);
     }
 }
