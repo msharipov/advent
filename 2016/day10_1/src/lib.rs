@@ -157,6 +157,15 @@ pub fn next_state(current: &Bots, transfers: &Transfers) -> Bots {
     new_bots
 }
 
+pub fn find_bot(bots: &Bots, low: u32, high: u32) -> Option<u32> {
+    for (k, bot) in bots {
+        if bot.numbers() == [low, high] {
+            return Some(*k);
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -238,5 +247,19 @@ mod tests {
             (12, Bot { numbers: vec![11] }),
         ]);
         assert_eq!(next_state(&next_1, &transfers), next_2);
+    }
+
+    #[test]
+    fn find_bot_test_1() {
+        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
+        let initial = set_up_bots(&initials);
+        assert_eq!(find_bot(&initial, 1, 4), Some(15));
+    }
+
+    #[test]
+    fn find_bot_test_2() {
+        let initials = [(4, 15), (10, 3), (11, 8), (1, 15)];
+        let initial = set_up_bots(&initials);
+        assert_eq!(find_bot(&initial, 8, 4), None);
     }
 }
