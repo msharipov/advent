@@ -55,7 +55,29 @@ pub fn parse_instructions(lines: &[&str]) -> Result<(Vec<Initial>, Transfers), s
     Ok((initials, transfers))
 }
 
-pub fn set_up_bots(initial: &[Initial]) -> HashMap<u32, Bot> {
+#[derive(Debug, PartialEq, Default)]
+pub struct Bot {
+    numbers: Vec<u32>,
+}
+
+impl Bot {
+    fn has_two(&self) -> bool {
+        self.numbers.len() == 2
+    }
+
+    fn numbers(&self) -> &[u32] {
+        self.numbers.as_slice()
+    }
+
+    fn give(&mut self, num: u32) {
+        self.numbers.push(num);
+        self.numbers.sort();
+    }
+}
+
+type Bots = HashMap<u32, Bot>;
+
+pub fn set_up_bots(initial: &[Initial]) -> Bots {
     let mut bots = HashMap::new();
     for instruction in initial {
         let &(value, bot) = instruction;
@@ -76,8 +98,8 @@ pub fn set_up_bots(initial: &[Initial]) -> HashMap<u32, Bot> {
     bots
 }
 
-pub fn next_state(current: &HashMap<u32, Bot>, transfers: &Transfers) -> HashMap<u32, Bot> {
-    let mut new_bots: HashMap<u32, Bot> = HashMap::new();
+pub fn next_state(current: &Bots, transfers: &Transfers) -> Bots {
+    let mut new_bots: Bots = HashMap::new();
     for (i, bot) in current.into_iter() {
         let (low, high) = transfers
             .get(i)
@@ -133,26 +155,6 @@ pub fn next_state(current: &HashMap<u32, Bot>, transfers: &Transfers) -> HashMap
         }
     }
     new_bots
-}
-
-#[derive(Debug, PartialEq, Default)]
-pub struct Bot {
-    numbers: Vec<u32>,
-}
-
-impl Bot {
-    fn has_two(&self) -> bool {
-        self.numbers.len() == 2
-    }
-
-    fn numbers(&self) -> &[u32] {
-        self.numbers.as_slice()
-    }
-
-    fn give(&mut self, num: u32) {
-        self.numbers.push(num);
-        self.numbers.sort();
-    }
 }
 
 #[cfg(test)]
