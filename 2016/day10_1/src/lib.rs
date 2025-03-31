@@ -100,7 +100,7 @@ pub fn set_up_bots(initial: &[Initial]) -> Bots {
 
 pub fn next_state(current: &Bots, transfers: &Transfers) -> Bots {
     let mut new_bots: Bots = HashMap::new();
-    for (i, bot) in current.into_iter() {
+    for (i, bot) in current {
         let (low, high) = transfers
             .get(i)
             .expect("missing transfer instruction")
