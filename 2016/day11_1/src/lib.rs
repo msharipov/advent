@@ -28,6 +28,24 @@ pub fn parse_floors(lines: &[&str]) -> Result<Floors, String> {
     Ok(floors)
 }
 
+fn is_valid(floors: &Floors) -> bool {
+    for floor in floors {
+        for part in floor {
+            if let Part::Chip(element) = part {
+                if !floor.contains(&Part::RTG(element.to_owned())) {
+                    if floor
+                        .iter()
+                        .any(|other_part| matches!(other_part, Part::RTG(_)))
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -50,5 +68,41 @@ mod tests {
             vec![Part::RTG("xenon".to_owned())],
         ];
         assert_eq!(correct, parse_floors(&lines).unwrap());
+    }
+
+    #[test]
+    fn is_valid_test_1() {
+        let floors: Floors = [
+            vec![
+                Part::RTG("helium".to_owned()),
+                Part::Chip("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ],
+            vec![],
+            vec![
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ],
+            vec![Part::RTG("iron".to_owned())],
+        ];
+        assert!(is_valid(&floors));
+    }
+
+    #[test]
+    fn is_valid_test_2() {
+        let floors: Floors = [
+            vec![
+                Part::RTG("iron".to_owned()),
+                Part::Chip("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ],
+            vec![],
+            vec![
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ],
+            vec![Part::RTG("helium".to_owned())],
+        ];
+        assert!(!is_valid(&floors));
     }
 }
