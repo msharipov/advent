@@ -1,8 +1,9 @@
 use std::collections::BTreeSet;
 
+use itertools::Itertools;
 use regex::Regex;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub enum Part {
     RTG(String),
     Chip(String),
@@ -10,7 +11,7 @@ pub enum Part {
 
 type Floors = [BTreeSet<Part>; 4];
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 struct State {
     elevator: usize,
     floors: Floors,
@@ -66,6 +67,32 @@ impl State {
             None
         }
     }
+
+    fn adjacent_states(&self) -> Vec<State> {
+        let mut adjacent = vec![];
+        for part in &self.floors[self.elevator] {
+            if self.elevator > 0 {
+                if let Some(s) = self.try_single_move(self.elevator - 1, &part) {
+                    adjacent.push(s);
+                }
+            }
+            if let Some(s) = self.try_single_move(self.elevator + 1, &part) {
+                adjacent.push(s);
+            }
+        }
+        for pair in self.floors[self.elevator].iter().combinations(2) {
+            let parts = (pair[0], pair[1]);
+            if self.elevator > 0 {
+                if let Some(s) = self.try_double_move(self.elevator - 1, parts) {
+                    adjacent.push(s);
+                }
+            }
+            if let Some(s) = self.try_double_move(self.elevator + 1, parts) {
+                adjacent.push(s);
+            }
+        }
+        adjacent
+    }
 }
 
 pub fn parse_floors(lines: &[&str]) -> Result<Floors, String> {
@@ -94,6 +121,8 @@ fn is_valid(floors: &Floors) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashSet;
+
     use super::*;
 
     #[test]
@@ -318,5 +347,57 @@ mod tests {
             ),
             None
         );
+    }
+
+    #[test]
+    fn adjacent_states_test_1() {
+        let floors = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state = State::new(2, floors);
+        let floors_1 = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([Part::Chip("xenon".to_owned())]),
+            BTreeSet::from_iter([Part::Chip("iron".to_owned())]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state_1 = State::new(1, floors_1);
+        let floors_2 = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([Part::Chip("iron".to_owned())]),
+            BTreeSet::from_iter([Part::Chip("xenon".to_owned())]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state_2 = State::new(1, floors_2);
+        let floors_3 = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state_3 = State::new(1, floors_3);
+        let floors_4 = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([Part::Chip("xenon".to_owned())]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned()), Part::Chip("iron".to_owned())]),
+        ];
+        let state_4 = State::new(3, floors_4);
+        let mut correct = HashSet::new();
+        correct.insert(state_1);
+        correct.insert(state_2);
+        correct.insert(state_3);
+        correct.insert(state_4);
+        let adjacent = HashSet::from_iter(state.adjacent_states());
+        assert_eq!(correct, adjacent);
     }
 }
