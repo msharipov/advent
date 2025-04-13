@@ -44,7 +44,7 @@ impl State {
         let mut floors = self.floors.clone();
         let part = floors[self.elevator].take(part)?;
         floors[dest].insert(part);
-        if is_valid_floor(&floors[dest]) {
+        if is_valid_floor(&floors[dest]) && is_valid_floor(&floors[self.elevator]) {
             Some(State::new(dest, floors))
         } else {
             None
@@ -61,7 +61,7 @@ impl State {
         let part2 = floors[self.elevator].take(part2)?;
         floors[dest].insert(part1);
         floors[dest].insert(part2);
-        if is_valid_floor(&floors[dest]) {
+        if is_valid_floor(&floors[dest]) && is_valid_floor(&floors[self.elevator]) {
             Some(State::new(dest, floors))
         } else {
             None
@@ -331,6 +331,28 @@ mod tests {
         assert_eq!(
             state.try_single_move(3, &Part::Chip("iron".to_owned())),
             Some(new_state)
+        );
+    }
+
+    #[test]
+    fn try_single_move_test_5() {
+        let floors: Floors = [
+            BTreeSet::from_iter([
+                Part::RTG("helium".to_owned()),
+                Part::Chip("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state = State::new(0, floors);
+        assert_eq!(
+            state.try_single_move(1, &Part::RTG("helium".to_owned())),
+            None
         );
     }
 
