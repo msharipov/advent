@@ -32,13 +32,12 @@ fn is_valid(floors: &Floors) -> bool {
     for floor in floors {
         for part in floor {
             if let Part::Chip(element) = part {
-                if !floor.contains(&Part::RTG(element.to_owned())) {
-                    if floor
-                        .iter()
-                        .any(|other_part| matches!(other_part, Part::RTG(_)))
-                    {
-                        return false;
-                    }
+                let has_matching_rtg = floor.contains(&Part::RTG(element.to_owned()));
+                let has_other_rtgs = floor
+                    .iter()
+                    .any(|other_part| matches!(other_part, Part::RTG(_)));
+                if !has_matching_rtg && has_other_rtgs {
+                    return false;
                 }
             }
         }
