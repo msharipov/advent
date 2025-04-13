@@ -168,6 +168,7 @@ pub fn least_steps_to_finish(floors: &Floors) -> Option<u64> {
             return None;
         }
         horizon = new_horizon;
+        println!("step {count}");
     }
     Some(count)
 }
