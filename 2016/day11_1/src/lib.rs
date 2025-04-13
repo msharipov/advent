@@ -49,6 +49,23 @@ impl State {
             None
         }
     }
+
+    fn try_double_move(&self, dest: usize, parts: (&Part, &Part)) -> Option<State> {
+        if dest > 3 || dest.abs_diff(self.elevator) != 1 {
+            return None;
+        }
+        let (part1, part2) = parts;
+        let mut floors = self.floors.clone();
+        let part1 = floors[self.elevator].take(part1)?;
+        let part2 = floors[self.elevator].take(part2)?;
+        floors[dest].insert(part1);
+        floors[dest].insert(part2);
+        if is_valid_floor(&floors[dest]) {
+            Some(State::new(dest, floors))
+        } else {
+            None
+        }
+    }
 }
 
 pub fn parse_floors(lines: &[&str]) -> Result<Floors, String> {
@@ -231,6 +248,75 @@ mod tests {
         assert_eq!(
             state.try_single_move(3, &Part::Chip("iron".to_owned())),
             Some(new_state)
+        );
+    }
+
+    #[test]
+    fn try_double_move_test_1() {
+        let floors: Floors = [
+            BTreeSet::from_iter([
+                Part::RTG("helium".to_owned()),
+                Part::Chip("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state = State::new(0, floors);
+        let new_floors = [
+            BTreeSet::from_iter([Part::Chip("helium".to_owned())]),
+            BTreeSet::from_iter([
+                Part::RTG("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let new_state = State::new(1, new_floors);
+        assert_eq!(
+            state.try_double_move(
+                1,
+                (
+                    &Part::RTG("helium".to_owned()),
+                    &Part::RTG("xenon".to_owned())
+                )
+            ),
+            Some(new_state)
+        );
+    }
+
+    #[test]
+    fn try_double_move_test_2() {
+        let floors: Floors = [
+            BTreeSet::from_iter([
+                Part::RTG("helium".to_owned()),
+                Part::Chip("helium".to_owned()),
+                Part::RTG("xenon".to_owned()),
+            ]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        let state = State::new(2, floors);
+        assert_eq!(
+            state.try_double_move(
+                3,
+                (
+                    &Part::Chip("xenon".to_owned()),
+                    &Part::Chip("iron".to_owned())
+                )
+            ),
+            None
         );
     }
 }
