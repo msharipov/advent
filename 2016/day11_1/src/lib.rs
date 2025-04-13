@@ -115,10 +115,6 @@ pub fn parse_floors(lines: &[&str]) -> Result<Floors, String> {
     Ok(floors)
 }
 
-fn is_valid(floors: &Floors) -> bool {
-    floors.iter().all(|f| is_valid_floor(f))
-}
-
 fn final_state(floors: &Floors) -> State {
     let mut elements = HashSet::new();
     for floor in floors {
