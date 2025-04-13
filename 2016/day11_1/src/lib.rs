@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use itertools::Itertools;
 use regex::Regex;
@@ -11,7 +11,7 @@ pub enum Part {
 
 type Floors = [BTreeSet<Part>; 4];
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct State {
     elevator: usize,
     floors: Floors,
@@ -117,6 +117,59 @@ pub fn parse_floors(lines: &[&str]) -> Result<Floors, String> {
 
 fn is_valid(floors: &Floors) -> bool {
     floors.iter().all(|f| is_valid_floor(f))
+}
+
+fn final_state(floors: &Floors) -> State {
+    let mut elements = HashSet::new();
+    for floor in floors {
+        for part in floor {
+            match part {
+                Part::RTG(el) => {
+                    elements.insert(el.to_owned());
+                }
+                Part::Chip(el) => {
+                    elements.insert(el.to_owned());
+                }
+            }
+        }
+    }
+    let mut final_floors = [
+        BTreeSet::new(),
+        BTreeSet::new(),
+        BTreeSet::new(),
+        BTreeSet::new(),
+    ];
+    for element in elements {
+        final_floors[3].insert(Part::Chip(element.to_owned()));
+        final_floors[3].insert(Part::RTG(element.to_owned()));
+    }
+    State::new(3, final_floors)
+}
+
+pub fn least_steps_to_finish(floors: &Floors) -> Option<u64> {
+    let mut count = 0u64;
+    let final_state = final_state(&floors);
+    let initial_state = State::new(0, floors.clone());
+    let mut horizon: HashSet<_> = HashSet::from_iter([initial_state.clone()]);
+    let mut explored: HashMap<State, u64> = HashMap::from_iter([(initial_state, 0)]);
+    while !horizon.contains(&final_state) {
+        let mut new_horizon = HashSet::new();
+        count += 1;
+        for state in &horizon {
+            let adjacent = state.adjacent_states();
+            for adj in adjacent {
+                if !explored.contains_key(&adj) {
+                    explored.insert(adj.clone(), count);
+                    new_horizon.insert(adj);
+                }
+            }
+        }
+        if new_horizon.is_empty() {
+            return None;
+        }
+        horizon = new_horizon;
+    }
+    Some(count)
 }
 
 #[cfg(test)]
@@ -399,5 +452,30 @@ mod tests {
         correct.insert(state_4);
         let adjacent = HashSet::from_iter(state.adjacent_states());
         assert_eq!(correct, adjacent);
+    }
+
+    #[test]
+    fn least_steps_to_finish_test_1() {
+        let floors = [
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([Part::RTG("xenon".to_owned())]),
+            BTreeSet::from_iter([
+                Part::Chip("xenon".to_owned()),
+                Part::Chip("iron".to_owned()),
+            ]),
+            BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
+        ];
+        assert_eq!(least_steps_to_finish(&floors), None);
+    }
+
+    #[test]
+    fn least_steps_to_finish_test_2() {
+        let floors = [
+            BTreeSet::from_iter([Part::RTG("iron".to_owned()), Part::Chip("iron".to_owned())]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([]),
+            BTreeSet::from_iter([]),
+        ];
+        assert_eq!(least_steps_to_finish(&floors), Some(3));
     }
 }
