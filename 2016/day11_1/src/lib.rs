@@ -72,11 +72,11 @@ impl State {
         let mut adjacent = vec![];
         for part in &self.floors[self.elevator] {
             if self.elevator > 0 {
-                if let Some(s) = self.try_single_move(self.elevator - 1, &part) {
+                if let Some(s) = self.try_single_move(self.elevator - 1, part) {
                     adjacent.push(s);
                 }
             }
-            if let Some(s) = self.try_single_move(self.elevator + 1, &part) {
+            if let Some(s) = self.try_single_move(self.elevator + 1, part) {
                 adjacent.push(s);
             }
         }
@@ -144,7 +144,7 @@ fn final_state(floors: &Floors) -> State {
 
 pub fn least_steps_to_finish(floors: &Floors) -> Option<u64> {
     let mut count = 0u64;
-    let final_state = final_state(&floors);
+    let final_state = final_state(floors);
     let initial_state = State::new(0, floors.clone());
     let mut horizon: HashSet<_> = HashSet::from_iter([initial_state.clone()]);
     let mut explored: HashMap<State, u64> = HashMap::from_iter([(initial_state, 0)]);
