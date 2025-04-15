@@ -196,7 +196,7 @@ mod tests {
     }
 
     #[test]
-    fn is_valid_test_1() {
+    fn is_valid_floor_test_1() {
         let floors: Floors = [
             BTreeSet::from_iter([
                 Part::RTG("helium".to_owned()),
@@ -210,25 +210,17 @@ mod tests {
             ]),
             BTreeSet::from_iter([Part::RTG("iron".to_owned())]),
         ];
-        assert!(is_valid(&floors));
+        assert!(floors.iter().all(|f| is_valid_floor(f)));
     }
 
     #[test]
-    fn is_valid_test_2() {
-        let floors: Floors = [
-            BTreeSet::from_iter([
-                Part::RTG("iron".to_owned()),
-                Part::Chip("helium".to_owned()),
-                Part::RTG("xenon".to_owned()),
-            ]),
-            BTreeSet::from_iter([]),
-            BTreeSet::from_iter([
-                Part::Chip("xenon".to_owned()),
-                Part::Chip("iron".to_owned()),
-            ]),
-            BTreeSet::from_iter([Part::RTG("helium".to_owned())]),
-        ];
-        assert!(!is_valid(&floors));
+    fn is_valid_floor_test_2() {
+        let floor = BTreeSet::from_iter([
+            Part::RTG("iron".to_owned()),
+            Part::Chip("helium".to_owned()),
+            Part::RTG("xenon".to_owned()),
+        ]);
+        assert!(!is_valid_floor(&floor));
     }
 
     #[test]
