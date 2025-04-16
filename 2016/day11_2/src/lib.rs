@@ -1,4 +1,7 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::{
+    collections::{BTreeSet, HashMap, HashSet},
+    thread,
+};
 
 use itertools::Itertools;
 use regex::Regex;
@@ -166,12 +169,30 @@ pub fn least_steps_to_finish(floors: &Floors) -> Option<u64> {
     while !horizon.contains(&final_state) {
         let mut new_horizon = HashSet::new();
         count += 1;
-        for state in &horizon {
-            let adjacent = state.adjacent_states();
-            for adj in adjacent {
-                if !explored.contains_key(&adj) {
-                    explored.insert(adj.clone(), count);
-                    new_horizon.insert(adj);
+        let thread_count = 12;
+        let chunk_size = horizon.len().div_ceil(thread_count);
+        let chunks = horizon.into_iter().chunks(chunk_size);
+        let chunks = chunks
+            .into_iter()
+            .map(|chunk| chunk.collect_vec())
+            .collect_vec();
+        let mut handles = vec![];
+        for chunk in chunks.into_iter() {
+            handles.push(thread::spawn(move || {
+                chunk
+                    .iter()
+                    .map(move |state| state.adjacent_states())
+                    .collect_vec()
+            }))
+        }
+        for handle in handles {
+            let new_states = handle.join().unwrap();
+            for adjacent in new_states {
+                for adj in adjacent {
+                    if !explored.contains_key(&adj) {
+                        explored.insert(adj.clone(), count);
+                        new_horizon.insert(adj);
+                    }
                 }
             }
         }
