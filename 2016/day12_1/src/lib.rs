@@ -71,6 +71,9 @@ pub fn parse_instructions(lines: &[&str]) -> Result<Vec<Instruction>, sscanf::Er
         .collect()
 }
 
+pub struct Halt;
+
+#[derive(Debug, PartialEq)]
 pub struct Computer {
     iar: usize,
     instructions: Vec<Instruction>,
@@ -98,6 +101,27 @@ impl Computer {
             Register::B => self.rb,
             Register::C => self.rc,
             Register::D => self.rd,
+        }
+    }
+
+    fn set_reg(&mut self, reg: Register, val: i64) {
+        let reg = match reg {
+            Register::A => &mut self.ra,
+            Register::B => &mut self.rb,
+            Register::C => &mut self.rc,
+            Register::D => &mut self.rd,
+        };
+        *reg = val;
+    }
+
+    fn cpy(&mut self, op_from: Operand, op_to: Register) {
+        match op_from {
+            Operand::Reg(reg) => {
+                self.set_reg(op_to, self.read_reg(reg));
+            }
+            Operand::Value(val) => {
+                self.set_reg(op_to, val);
+            }
         }
     }
 }
@@ -134,5 +158,24 @@ mod tests {
     fn parse_instructions_test_2() {
         let lines = ["cpy a 13", "cpy 12 c", "dec d", "inc c", "jnz a -19"];
         assert!(parse_instructions(&lines).is_err());
+    }
+
+    #[test]
+    fn cpy_test_1() {
+        let mut comp = Computer::new(&[]);
+        comp.set_reg(Register::A, 18);
+        comp.set_reg(Register::B, -12);
+        assert_eq!(comp.read_reg(Register::A), 18);
+        comp.cpy(Operand::Reg(Register::B), Register::A);
+        assert_eq!(comp.read_reg(Register::A), -12);
+    }
+
+    #[test]
+    fn cpy_test_2() {
+        let mut comp = Computer::new(&[]);
+        comp.set_reg(Register::A, 18);
+        assert_eq!(comp.read_reg(Register::A), 18);
+        comp.cpy(Operand::Value(45), Register::A);
+        assert_eq!(comp.read_reg(Register::A), 45);
     }
 }
