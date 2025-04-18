@@ -128,6 +128,10 @@ impl Computer {
     fn inc(&mut self, reg: Register) {
         self.set_reg(reg.clone(), self.read_reg(reg) + 1);
     }
+
+    fn dec(&mut self, reg: Register) {
+        self.set_reg(reg.clone(), self.read_reg(reg) - 1);
+    }
 }
 
 #[cfg(test)]
@@ -192,5 +196,16 @@ mod tests {
         comp.inc(Register::B);
         comp.inc(Register::B);
         assert_eq!(comp.read_reg(Register::B), 19);
+    }
+
+    #[test]
+    fn dec_test_1() {
+        let mut comp = Computer::new(&[]);
+        comp.set_reg(Register::B, 15);
+        comp.dec(Register::B);
+        comp.dec(Register::B);
+        comp.dec(Register::B);
+        comp.dec(Register::B);
+        assert_eq!(comp.read_reg(Register::B), 11);
     }
 }
