@@ -124,6 +124,10 @@ impl Computer {
             }
         }
     }
+
+    fn inc(&mut self, reg: Register) {
+        self.set_reg(reg.clone(), self.read_reg(reg) + 1);
+    }
 }
 
 #[cfg(test)]
@@ -177,5 +181,16 @@ mod tests {
         assert_eq!(comp.read_reg(Register::A), 18);
         comp.cpy(Operand::Value(45), Register::A);
         assert_eq!(comp.read_reg(Register::A), 45);
+    }
+
+    #[test]
+    fn inc_test_1() {
+        let mut comp = Computer::new(&[]);
+        comp.set_reg(Register::B, 15);
+        comp.inc(Register::B);
+        comp.inc(Register::B);
+        comp.inc(Register::B);
+        comp.inc(Register::B);
+        assert_eq!(comp.read_reg(Register::B), 19);
     }
 }
