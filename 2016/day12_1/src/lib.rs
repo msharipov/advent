@@ -94,7 +94,7 @@ impl Computer {
             rb: 0,
             rc: 0,
             rd: 0,
-            instructions: instructions.iter().cloned().collect(),
+            instructions: instructions.to_vec(),
         }
     }
 
