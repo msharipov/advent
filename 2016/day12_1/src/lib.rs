@@ -1,7 +1,7 @@
 use sscanf::sscanf;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Register {
     A,
     B,
@@ -22,13 +22,13 @@ impl FromStr for Register {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Operand {
     Reg(Register),
     Value(i64),
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
     Cpy(Operand, Register),
     Inc(Register),
@@ -69,6 +69,28 @@ pub fn parse_instructions(lines: &[&str]) -> Result<Vec<Instruction>, sscanf::Er
         .iter()
         .map(|&line| line.parse::<Instruction>())
         .collect()
+}
+
+pub struct Computer {
+    iar: usize,
+    instructions: Vec<Instruction>,
+    ra: i64,
+    rb: i64,
+    rc: i64,
+    rd: i64,
+}
+
+impl Computer {
+    pub fn new(instructions: &[Instruction]) -> Self {
+        Computer {
+            iar: 0,
+            ra: 0,
+            rb: 0,
+            rc: 0,
+            rd: 0,
+            instructions: instructions.iter().cloned().collect(),
+        }
+    }
 }
 
 #[cfg(test)]
