@@ -130,12 +130,12 @@ impl Computer {
     }
 
     fn inc(&mut self, reg: Register) {
-        self.set_reg(reg.clone(), self.read_reg(reg) + 1);
+        self.set_reg(reg, self.read_reg(reg) + 1);
         self.iar += 1;
     }
 
     fn dec(&mut self, reg: Register) {
-        self.set_reg(reg.clone(), self.read_reg(reg) - 1);
+        self.set_reg(reg, self.read_reg(reg) - 1);
         self.iar += 1;
     }
 
