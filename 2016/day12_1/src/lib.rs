@@ -123,19 +123,24 @@ impl Computer {
                 self.set_reg(op_to, val);
             }
         }
+        self.iar += 1;
     }
 
     fn inc(&mut self, reg: Register) {
         self.set_reg(reg.clone(), self.read_reg(reg) + 1);
+        self.iar += 1;
     }
 
     fn dec(&mut self, reg: Register) {
         self.set_reg(reg.clone(), self.read_reg(reg) - 1);
+        self.iar += 1;
     }
 
     fn jnz(&mut self, reg: Register, jump_len: i64) {
-        if self.read_reg(reg) == 0 {
+        if self.read_reg(reg) != 0 {
             self.iar += jump_len;
+        } else {
+            self.iar += 1;
         }
     }
 
@@ -150,15 +155,12 @@ impl Computer {
                 match inst {
                     Cpy(op_from, op_to) => {
                         self.cpy(*op_from, *op_to);
-                        self.iar += 1;
                     }
                     Inc(reg) => {
                         self.inc(*reg);
-                        self.iar += 1;
                     }
                     Dec(reg) => {
                         self.dec(*reg);
-                        self.iar += 1;
                     }
                     Jnz(reg, jump_len) => {
                         self.jnz(*reg, *jump_len);
@@ -167,6 +169,10 @@ impl Computer {
                 Ok(())
             }
         }
+    }
+
+    pub fn run(&mut self) {
+        while self.next_step().is_ok() {}
     }
 }
 
@@ -249,6 +255,7 @@ mod tests {
     fn jnz_test_1() {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
+        comp.set_reg(Register::B, 5);
         comp.jnz(Register::B, 14);
         assert_eq!(comp.iar, 14);
     }
@@ -257,8 +264,21 @@ mod tests {
     fn jnz_test_2() {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
-        comp.set_reg(Register::B, 5);
         comp.jnz(Register::B, 14);
-        assert_eq!(comp.iar, 0);
+        assert_eq!(comp.iar, 1);
+    }
+
+    #[test]
+    fn run_test_1() {
+        let instructions = [
+            "cpy 10 a", "inc b", "inc c", "inc c", "inc d", "inc d", "inc d", "dec a", "jnz a -7",
+        ];
+        let instructions = parse_instructions(&instructions).unwrap();
+        let mut comp = Computer::new(&instructions);
+        comp.run();
+        assert_eq!(comp.read_reg(Register::A), 0);
+        assert_eq!(comp.read_reg(Register::B), 10);
+        assert_eq!(comp.read_reg(Register::C), 20);
+        assert_eq!(comp.read_reg(Register::D), 30);
     }
 }
