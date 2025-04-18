@@ -91,6 +91,15 @@ impl Computer {
             instructions: instructions.iter().cloned().collect(),
         }
     }
+
+    pub fn read_reg(&self, reg: Register) -> i64 {
+        match reg {
+            Register::A => self.ra,
+            Register::B => self.rb,
+            Register::C => self.rc,
+            Register::D => self.rd,
+        }
+    }
 }
 
 #[cfg(test)]
