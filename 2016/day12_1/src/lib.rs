@@ -1,7 +1,7 @@
 use sscanf::sscanf;
-use std::{ops::Add, str::FromStr};
+use std::str::FromStr;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Register {
     A,
     B,
@@ -22,7 +22,7 @@ impl FromStr for Register {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Operand {
     Reg(Register),
     Value(i64),
@@ -136,6 +136,36 @@ impl Computer {
     fn jnz(&mut self, reg: Register, jump_len: i64) {
         if self.read_reg(reg) == 0 {
             self.iar += jump_len;
+        }
+    }
+
+    pub fn next_step(&mut self) -> Result<(), Halt> {
+        use Instruction::*;
+        if self.iar < 0 {
+            return Err(Halt);
+        }
+        match self.instructions.get(self.iar as usize) {
+            None => Err(Halt),
+            Some(inst) => {
+                match inst {
+                    Cpy(op_from, op_to) => {
+                        self.cpy(*op_from, *op_to);
+                        self.iar += 1;
+                    }
+                    Inc(reg) => {
+                        self.inc(*reg);
+                        self.iar += 1;
+                    }
+                    Dec(reg) => {
+                        self.dec(*reg);
+                        self.iar += 1;
+                    }
+                    Jnz(reg, jump_len) => {
+                        self.jnz(*reg, *jump_len);
+                    }
+                }
+                Ok(())
+            }
         }
     }
 }
