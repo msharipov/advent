@@ -22,11 +22,13 @@ impl FromStr for Register {
     }
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Operand {
     Reg(Register),
     Value(i64),
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Instruction {
     Cpy(Operand, Register),
     Inc(Register),
@@ -62,6 +64,13 @@ impl FromStr for Instruction {
     }
 }
 
+pub fn parse_instructions(lines: &[&str]) -> Result<Vec<Instruction>, sscanf::Error> {
+    lines
+        .iter()
+        .map(|&line| line.parse::<Instruction>())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -74,5 +83,25 @@ mod tests {
     #[test]
     fn register_from_str_test_2() {
         assert!("p".parse::<Register>().is_err());
+    }
+
+    #[test]
+    fn parse_instructions_test_1() {
+        use Instruction::*;
+        let lines = ["cpy b a", "cpy 12 c", "dec d", "inc c", "jnz a -19"];
+        let correct = vec![
+            Cpy(Operand::Reg(Register::B), Register::A),
+            Cpy(Operand::Value(12), Register::C),
+            Dec(Register::D),
+            Inc(Register::C),
+            Jnz(Register::A, -19),
+        ];
+        assert_eq!(parse_instructions(&lines).unwrap(), correct);
+    }
+
+    #[test]
+    fn parse_instructions_test_2() {
+        let lines = ["cpy a 13", "cpy 12 c", "dec d", "inc c", "jnz a -19"];
+        assert!(parse_instructions(&lines).is_err());
     }
 }
