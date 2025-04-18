@@ -1,5 +1,5 @@
 use sscanf::sscanf;
-use std::str::FromStr;
+use std::{ops::Add, str::FromStr};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Register {
@@ -75,7 +75,7 @@ pub struct Halt;
 
 #[derive(Debug, PartialEq)]
 pub struct Computer {
-    iar: usize,
+    iar: i64,
     instructions: Vec<Instruction>,
     ra: i64,
     rb: i64,
@@ -131,6 +131,12 @@ impl Computer {
 
     fn dec(&mut self, reg: Register) {
         self.set_reg(reg.clone(), self.read_reg(reg) - 1);
+    }
+
+    fn jnz(&mut self, reg: Register, jump_len: i64) {
+        if self.read_reg(reg) == 0 {
+            self.iar += jump_len;
+        }
     }
 }
 
@@ -207,5 +213,22 @@ mod tests {
         comp.dec(Register::B);
         comp.dec(Register::B);
         assert_eq!(comp.read_reg(Register::B), 11);
+    }
+
+    #[test]
+    fn jnz_test_1() {
+        let mut comp = Computer::new(&[]);
+        assert_eq!(comp.iar, 0);
+        comp.jnz(Register::B, 14);
+        assert_eq!(comp.iar, 14);
+    }
+
+    #[test]
+    fn jnz_test_2() {
+        let mut comp = Computer::new(&[]);
+        assert_eq!(comp.iar, 0);
+        comp.set_reg(Register::B, 5);
+        comp.jnz(Register::B, 14);
+        assert_eq!(comp.iar, 0);
     }
 }
