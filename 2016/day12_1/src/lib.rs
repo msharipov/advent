@@ -33,7 +33,7 @@ pub enum Instruction {
     Cpy(Operand, Register),
     Inc(Register),
     Dec(Register),
-    Jnz(Register, i64),
+    Jnz(Operand, i64),
 }
 
 impl FromStr for Instruction {
@@ -58,7 +58,10 @@ impl FromStr for Instruction {
         }
         if let Ok((reg, jump_len)) = sscanf!(s, "jnz {:/a|b|c|d/} {i64}", &str) {
             let reg = reg.parse::<Register>()?;
-            return Ok(Instruction::Jnz(reg, jump_len));
+            return Ok(Instruction::Jnz(Operand::Reg(reg), jump_len));
+        }
+        if let Ok((val, jump_len)) = sscanf!(s, "jnz {i64} {i64}") {
+            return Ok(Instruction::Jnz(Operand::Value(val), jump_len));
         }
         Err(Self::Err::MatchFailed)
     }
@@ -136,8 +139,12 @@ impl Computer {
         self.iar += 1;
     }
 
-    fn jnz(&mut self, reg: Register, jump_len: i64) {
-        if self.read_reg(reg) != 0 {
+    fn jnz(&mut self, cond: Operand, jump_len: i64) {
+        let val = match cond {
+            Operand::Value(val) => val,
+            Operand::Reg(reg) => self.read_reg(reg),
+        };
+        if val != 0 {
             self.iar += jump_len;
         } else {
             self.iar += 1;
@@ -162,8 +169,8 @@ impl Computer {
                     Dec(reg) => {
                         self.dec(*reg);
                     }
-                    Jnz(reg, jump_len) => {
-                        self.jnz(*reg, *jump_len);
+                    Jnz(cond, jump_len) => {
+                        self.jnz(*cond, *jump_len);
                     }
                 }
                 Ok(())
@@ -193,20 +200,35 @@ mod tests {
     #[test]
     fn parse_instructions_test_1() {
         use Instruction::*;
-        let lines = ["cpy b a", "cpy 12 c", "dec d", "inc c", "jnz a -19"];
+        let lines = [
+            "cpy b a",
+            "cpy 12 c",
+            "dec d",
+            "inc c",
+            "jnz a -19",
+            "jnz 5 12",
+        ];
         let correct = vec![
             Cpy(Operand::Reg(Register::B), Register::A),
             Cpy(Operand::Value(12), Register::C),
             Dec(Register::D),
             Inc(Register::C),
-            Jnz(Register::A, -19),
+            Jnz(Operand::Reg(Register::A), -19),
+            Jnz(Operand::Value(5), 12),
         ];
         assert_eq!(parse_instructions(&lines).unwrap(), correct);
     }
 
     #[test]
     fn parse_instructions_test_2() {
-        let lines = ["cpy a 13", "cpy 12 c", "dec d", "inc c", "jnz a -19"];
+        let lines = [
+            "cpy a 13",
+            "cpy 12 c",
+            "dec d",
+            "inc c",
+            "jnz a -19",
+            "jnz 5 12",
+        ];
         assert!(parse_instructions(&lines).is_err());
     }
 
@@ -256,7 +278,7 @@ mod tests {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
         comp.set_reg(Register::B, 5);
-        comp.jnz(Register::B, 14);
+        comp.jnz(Operand::Reg(Register::B), 14);
         assert_eq!(comp.iar, 14);
     }
 
@@ -264,8 +286,16 @@ mod tests {
     fn jnz_test_2() {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
-        comp.jnz(Register::B, 14);
+        comp.jnz(Operand::Reg(Register::B), 14);
         assert_eq!(comp.iar, 1);
+    }
+
+    #[test]
+    fn jnz_test_3() {
+        let mut comp = Computer::new(&[]);
+        assert_eq!(comp.iar, 0);
+        comp.jnz(Operand::Value(11), 14);
+        assert_eq!(comp.iar, 14);
     }
 
     #[test]
