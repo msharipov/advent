@@ -7,6 +7,7 @@ fn main() {
     let input = input.trim().lines().collect::<Vec<_>>();
     let instructions = parse_instructions(&input).unwrap();
     let mut comp = Computer::new(&instructions);
+    comp.set_reg(Register::C, 1);
     comp.run();
     println!("a = {}", comp.read_reg(Register::A));
 }
