@@ -30,7 +30,7 @@ impl Maze {
             };
             self.cells.insert(*location, cell.clone());
         }
-        return self.cells.get(location).unwrap();
+        self.cells.get(location).unwrap()
     }
 
     pub fn shortest_distance(&mut self, from: &(i64, i64), to: &(i64, i64)) -> Option<usize> {
