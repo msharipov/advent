@@ -56,6 +56,7 @@ impl Maze {
                     match self.get_cell(&neighbor) {
                         Cell::Space => {
                             new_horizon.insert(neighbor);
+                            explored.insert(neighbor);
                         }
                         Cell::Wall => {}
                     }
