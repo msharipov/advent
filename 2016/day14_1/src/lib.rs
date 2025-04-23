@@ -7,6 +7,15 @@ fn contains_triplet(hash: &str) -> Option<char> {
     None
 }
 
+fn contains_five_chars(hash: &str, target: char) -> bool {
+    for window in hash.as_bytes().windows(5) {
+        if window.iter().all(|&c| c as char == target) {
+            return true;
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -24,5 +33,15 @@ mod tests {
     #[test]
     fn contains_triplet_test_3() {
         assert_eq!(contains_triplet("62m5694mmmk45ml6km4555fdasw"), Some('m'));
+    }
+
+    #[test]
+    fn contains_five_chars_test_1() {
+        assert!(contains_five_chars("adfvnmfffffsdunvb", 'f'));
+    }
+
+    #[test]
+    fn contains_five_chars_test_2() {
+        assert!(!contains_five_chars("adfvnmfffffsdunvb", 'p'));
     }
 }
