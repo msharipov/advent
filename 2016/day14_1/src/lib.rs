@@ -16,6 +16,21 @@ fn contains_five_chars(hash: &str, target: char) -> bool {
     false
 }
 
+fn is_key_index(salt: &str, index: u64) -> bool {
+    let composite = format!("{salt}{index}");
+    let hash_string = format!("{:x}", md5::compute(composite));
+    if let Some(c) = contains_triplet(&hash_string) {
+        for i in index + 1..index + 1001 {
+            let composite = format!("{salt}{i}");
+            let hash_string = format!("{:x}", md5::compute(composite));
+            if contains_five_chars(&hash_string, c) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,5 +58,15 @@ mod tests {
     #[test]
     fn contains_five_chars_test_2() {
         assert!(!contains_five_chars("adfvnmfffffsdunvb", 'p'));
+    }
+
+    #[test]
+    fn is_key_index_test_1() {
+        assert!(is_key_index("abc", 39));
+    }
+
+    #[test]
+    fn is_key_index_test_2() {
+        assert!(!is_key_index("abc", 18));
     }
 }
