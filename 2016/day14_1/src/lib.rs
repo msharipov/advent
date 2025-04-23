@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 fn contains_triplet(hash: &str) -> Option<char> {
     for triple in hash.as_bytes().windows(3) {
         if triple[0] == triple[1] && triple[1] == triple[2] {
@@ -29,6 +31,22 @@ fn is_key_index(salt: &str, index: u64) -> bool {
         }
     }
     false
+}
+
+pub fn index_of_nth_key(n: NonZero<u64>, salt: &str) -> u64 {
+    let n: u64 = n.into();
+    let mut index = 0;
+    let mut found = 0;
+    loop {
+        if is_key_index(salt, index) {
+            found += 1;
+        }
+        if found == n {
+            break;
+        }
+        index += 1;
+    }
+    index
 }
 
 #[cfg(test)]
@@ -68,5 +86,11 @@ mod tests {
     #[test]
     fn is_key_index_test_2() {
         assert!(!is_key_index("abc", 18));
+    }
+
+    #[test]
+    fn index_of_nth_key_test_1() {
+        assert_eq!(index_of_nth_key(1.try_into().unwrap(), "abc"), 39);
+        assert_eq!(index_of_nth_key(2.try_into().unwrap(), "abc"), 92);
     }
 }
