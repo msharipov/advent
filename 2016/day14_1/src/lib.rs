@@ -18,14 +18,18 @@ fn contains_five_chars(hash: &str, target: char) -> bool {
     false
 }
 
-fn is_key_index(salt: &str, index: u64) -> bool {
+fn is_key_index(salt: &str, index: u64, computed: &mut Vec<String>) -> bool {
     let composite = format!("{salt}{index}");
     let hash_string = format!("{:x}", md5::compute(composite));
     if let Some(c) = contains_triplet(&hash_string) {
         for i in index + 1..index + 1001 {
-            let composite = format!("{salt}{i}");
-            let hash_string = format!("{:x}", md5::compute(composite));
-            if contains_five_chars(&hash_string, c) {
+            while computed.get(i as usize).is_none() {
+                let composite = format!("{salt}{}", computed.len());
+                let hash = format!("{:x}", md5::compute(composite));
+                computed.push(hash);
+            }
+            let hash = &computed[i as usize];
+            if contains_five_chars(hash, c) {
                 return true;
             }
         }
@@ -37,8 +41,9 @@ pub fn index_of_nth_key(n: NonZero<u64>, salt: &str) -> u64 {
     let n: u64 = n.into();
     let mut index = 0;
     let mut found = 0;
+    let mut computed = vec![];
     loop {
-        if is_key_index(salt, index) {
+        if is_key_index(salt, index, &mut computed) {
             found += 1;
         }
         if found == n {
@@ -80,12 +85,12 @@ mod tests {
 
     #[test]
     fn is_key_index_test_1() {
-        assert!(is_key_index("abc", 39));
+        assert!(is_key_index("abc", 39, &mut vec![]));
     }
 
     #[test]
     fn is_key_index_test_2() {
-        assert!(!is_key_index("abc", 18));
+        assert!(!is_key_index("abc", 18, &mut vec![]));
     }
 
     #[test]
