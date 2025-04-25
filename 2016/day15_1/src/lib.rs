@@ -1,3 +1,4 @@
+use num::integer;
 use sscanf::sscanf;
 use std::str::FromStr;
 
@@ -25,6 +26,25 @@ impl FromStr for Disc {
     }
 }
 
+fn discs_aligned(discs: &[Disc], time: u64) -> bool {
+    discs
+        .iter()
+        .enumerate()
+        .all(|(i, disc)| (disc.start + 1 + i as u64 + time) % disc.positions == 0)
+}
+
+pub fn first_capsule_time(discs: &[Disc]) -> Option<u64> {
+    let period = discs
+        .iter()
+        .fold(1, |acc, disc| integer::lcm(acc, disc.positions));
+    for t in 0..period {
+        if discs_aligned(discs, t) {
+            return Some(t);
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,5 +57,17 @@ mod tests {
                 .unwrap(),
             Disc::new(55, 20)
         );
+    }
+
+    #[test]
+    fn first_capsule_time_test_1() {
+        let discs = [Disc::new(5, 2), Disc::new(3, 0), Disc::new(4, 1)];
+        assert_eq!(first_capsule_time(&discs), Some(52));
+    }
+
+    #[test]
+    fn first_capsule_time_test_2() {
+        let discs = [Disc::new(3, 1), Disc::new(3, 2), Disc::new(7, 4)];
+        assert_eq!(first_capsule_time(&discs), None);
     }
 }
