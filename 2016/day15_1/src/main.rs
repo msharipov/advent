@@ -1,3 +1,11 @@
+use std::fs::read_to_string;
+
+use day15_1::{Disc, first_capsule_time};
+
 fn main() {
-    println!("Hello, world!");
+    let input = read_to_string("input.txt").expect("no input.txt in current directory");
+    let input = input.trim().lines().collect::<Vec<_>>();
+    let discs: Vec<_> = input.iter().map(|s| s.parse::<Disc>().unwrap()).collect();
+    let time = first_capsule_time(&discs).unwrap();
+    println!("The earliest time to press the button is at t={time}");
 }
