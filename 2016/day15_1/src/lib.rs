@@ -37,12 +37,7 @@ pub fn first_capsule_time(discs: &[Disc]) -> Option<u64> {
     let period = discs
         .iter()
         .fold(1, |acc, disc| integer::lcm(acc, disc.positions));
-    for t in 0..period {
-        if discs_aligned(discs, t) {
-            return Some(t);
-        }
-    }
-    None
+    (0..period).find(|&t| discs_aligned(discs, t))
 }
 
 #[cfg(test)]
