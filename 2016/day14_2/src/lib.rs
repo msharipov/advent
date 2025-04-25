@@ -28,12 +28,12 @@ fn stretched_hash(str_to_hash: &str) -> String {
 
 fn is_key_index(salt: &str, index: u64, computed: &mut Vec<String>) -> bool {
     let composite = format!("{salt}{index}");
-    let hash_string = format!("{:x}", md5::compute(composite));
+    let hash_string = stretched_hash(&composite);
     if let Some(c) = contains_triplet(&hash_string) {
         for i in index + 1..index + 1001 {
             while computed.get(i as usize).is_none() {
                 let composite = format!("{salt}{}", computed.len());
-                let hash = format!("{:x}", md5::compute(composite));
+                let hash = stretched_hash(&composite);
                 computed.push(hash);
             }
             let hash = &computed[i as usize];
@@ -93,18 +93,17 @@ mod tests {
 
     #[test]
     fn is_key_index_test_1() {
-        assert!(is_key_index("abc", 39, &mut vec![]));
+        assert!(is_key_index("abc", 10, &mut vec![]));
     }
 
     #[test]
     fn is_key_index_test_2() {
-        assert!(!is_key_index("abc", 18, &mut vec![]));
+        assert!(!is_key_index("abc", 5, &mut vec![]));
     }
 
     #[test]
     fn index_of_nth_key_test_1() {
-        assert_eq!(index_of_nth_key(1.try_into().unwrap(), "abc"), 39);
-        assert_eq!(index_of_nth_key(2.try_into().unwrap(), "abc"), 92);
+        assert_eq!(index_of_nth_key(1.try_into().unwrap(), "abc"), 10);
     }
 
     #[test]
