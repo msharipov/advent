@@ -1,8 +1,23 @@
+use std::str::FromStr;
+
 pub enum Move {
     Up,
     Down,
     Left,
     Right,
+}
+
+pub fn moves_to_string(moves: &[Move]) -> String {
+    use Move::*;
+    moves
+        .iter()
+        .map(|m| match m {
+            Up => 'U',
+            Down => 'D',
+            Left => 'L',
+            Right => 'R',
+        })
+        .collect()
 }
 
 #[derive(Debug, PartialEq)]
@@ -15,16 +30,7 @@ struct OpenDoors {
 
 impl OpenDoors {
     pub fn new(salt: &str, moves: &[Move]) -> Self {
-        use Move::*;
-        let mut hash_str = salt.to_owned();
-        for m in moves {
-            hash_str.push(match m {
-                Up => 'U',
-                Down => 'D',
-                Left => 'L',
-                Right => 'R',
-            });
-        }
+        let hash_str = format!("{salt}{}", moves_to_string(moves));
         let hash = format!("{:x}", md5::compute(&hash_str));
         let chars: Vec<_> = hash.chars().collect();
         OpenDoors {
