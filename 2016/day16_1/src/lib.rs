@@ -9,7 +9,7 @@ fn next_iter(initial: &str) -> String {
     format!("{initial}0{b}")
 }
 
-fn generate_data(initial: &str, size: usize) -> String {
+pub fn generate_data(initial: &str, size: usize) -> String {
     let mut current = initial.to_owned();
     while current.len() < size {
         current = next_iter(&current);
@@ -17,18 +17,14 @@ fn generate_data(initial: &str, size: usize) -> String {
     current.chars().take(size).collect()
 }
 
-fn checksum(data: &str) -> String {
+pub fn checksum(data: &str) -> String {
     let mut data = data.to_owned();
     while data.len() % 2 == 0 {
         data = data
             .chars()
             .tuple_windows()
             .step_by(2)
-            .flat_map(
-                |(first, second)| {
-                    if first == second { Some(first) } else { None }
-                },
-            )
+            .map(|(first, second)| if first == second { '1' } else { '0' })
             .collect();
     }
     data
@@ -55,6 +51,11 @@ mod tests {
 
     #[test]
     fn checksum_test_1() {
-        assert_eq!(checksum(&generate_data("10", 16)), "010");
+        assert_eq!(checksum(&generate_data("10", 16)), "0");
+    }
+
+    #[test]
+    fn checksum_test_2() {
+        assert_eq!(checksum(&generate_data("10000", 20)), "01100");
     }
 }
