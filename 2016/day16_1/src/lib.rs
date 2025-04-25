@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 fn next_iter(initial: &str) -> String {
     let b: String = initial
         .chars()
@@ -13,6 +15,23 @@ fn generate_data(initial: &str, size: usize) -> String {
         current = next_iter(&current);
     }
     current.chars().take(size).collect()
+}
+
+fn checksum(data: &str) -> String {
+    let mut data = data.to_owned();
+    while data.len() % 2 == 0 {
+        data = data
+            .chars()
+            .tuple_windows()
+            .step_by(2)
+            .flat_map(
+                |(first, second)| {
+                    if first == second { Some(first) } else { None }
+                },
+            )
+            .collect();
+    }
+    data
 }
 
 #[cfg(test)]
@@ -32,5 +51,10 @@ mod tests {
     #[test]
     fn generate_data_test_2() {
         assert_eq!(generate_data("10", 15), "100100101100100")
+    }
+
+    #[test]
+    fn checksum_test_1() {
+        assert_eq!(checksum(&generate_data("10", 16)), "010");
     }
 }
