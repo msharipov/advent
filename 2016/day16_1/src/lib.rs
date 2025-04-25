@@ -7,6 +7,14 @@ fn next_iter(initial: &str) -> String {
     format!("{initial}0{b}")
 }
 
+fn generate_data(initial: &str, size: usize) -> String {
+    let mut current = initial.to_owned();
+    while current.len() < size {
+        current = next_iter(&current);
+    }
+    current.chars().take(size).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -14,5 +22,15 @@ mod tests {
     #[test]
     fn next_iter_test_1() {
         assert_eq!(next_iter("1010"), "101001010");
+    }
+
+    #[test]
+    fn generate_data_test_1() {
+        assert_eq!(generate_data("10", 11), "10010010110")
+    }
+
+    #[test]
+    fn generate_data_test_2() {
+        assert_eq!(generate_data("10", 15), "100100101100100")
     }
 }
