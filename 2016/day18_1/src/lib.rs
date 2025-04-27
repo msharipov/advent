@@ -25,6 +25,14 @@ fn next_row(row: &[Tile]) -> Vec<Tile> {
     new_row
 }
 
+fn generate_floor(row: &[Tile]) -> Vec<Vec<Tile>> {
+    let mut floor = vec![row.to_vec()];
+    while floor.len() < row.len() {
+        floor.push(next_row(floor.last().expect("must be nonempty")));
+    }
+    floor
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -43,5 +51,18 @@ mod tests {
         use Tile::{Safe, Trap};
         let row = [Safe, Trap, Trap, Safe, Trap, Trap, Trap];
         assert_eq!(next_row(&row), [Trap, Trap, Trap, Safe, Trap, Safe, Trap]);
+    }
+
+    #[test]
+    fn generate_floor_test_1() {
+        use Tile::{Safe, Trap};
+        let row = [Safe, Safe, Trap, Trap];
+        let correct = vec![
+            vec![Safe, Safe, Trap, Trap],
+            vec![Safe, Trap, Trap, Trap],
+            vec![Trap, Trap, Safe, Trap],
+            vec![Trap, Trap, Safe, Safe],
+        ];
+        assert_eq!(correct, generate_floor(&row));
     }
 }
