@@ -4,12 +4,12 @@ pub enum Tile {
     Trap,
 }
 
-pub fn parse_row(line: &str) -> Vec<Tile> {
+pub fn parse_row(line: &str) -> Result<Vec<Tile>, &str> {
     line.chars()
         .map(|c| match c {
-            '^' => Tile::Trap,
-            '.' => Tile::Safe,
-            _ => panic!("unexpected input"),
+            '^' => Ok(Tile::Trap),
+            '.' => Ok(Tile::Safe),
+            _ => Err("invalid character"),
         })
         .collect()
 }
@@ -101,6 +101,6 @@ mod tests {
     fn parse_row_test_1() {
         use Tile::{Safe, Trap};
         let line = "..^.^";
-        assert_eq!(parse_row(line), vec![Safe, Safe, Trap, Safe, Trap]);
+        assert_eq!(parse_row(line).unwrap(), vec![Safe, Safe, Trap, Safe, Trap]);
     }
 }
