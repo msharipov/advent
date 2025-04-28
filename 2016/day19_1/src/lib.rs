@@ -1,4 +1,4 @@
-fn get_target(skipped: &[bool], thief_index: usize) -> Option<usize> {
+fn next_unskipped(skipped: &[bool], thief_index: usize) -> Option<usize> {
     if !matches!(skipped.get(thief_index), Some(false)) {
         return None;
     }
@@ -18,16 +18,19 @@ mod tests {
 
     #[test]
     fn get_target_test_1() {
-        assert_eq!(get_target(&[true, true, false, false, true], 3), Some(2));
+        assert_eq!(
+            next_unskipped(&[true, true, false, false, true], 3),
+            Some(2)
+        );
     }
 
     #[test]
     fn get_target_test_2() {
-        assert_eq!(get_target(&[true, true, true, false, true], 3), Some(3));
+        assert_eq!(next_unskipped(&[true, true, true, false, true], 3), Some(3));
     }
 
     #[test]
     fn get_target_test_3() {
-        assert_eq!(get_target(&[true, true, true, true, true], 3), None);
+        assert_eq!(next_unskipped(&[true, true, true, true, true], 3), None);
     }
 }
