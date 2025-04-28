@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq, Clone, Copy)]
-enum Tile {
+pub enum Tile {
     Safe,
     Trap,
 }
@@ -25,12 +25,25 @@ fn next_row(row: &[Tile]) -> Vec<Tile> {
     new_row
 }
 
-fn generate_floor(row: &[Tile]) -> Vec<Vec<Tile>> {
+type Floor = Vec<Vec<Tile>>;
+
+pub fn generate_floor(row: &[Tile]) -> Floor {
     let mut floor = vec![row.to_vec()];
     while floor.len() < row.len() {
         floor.push(next_row(floor.last().expect("must be nonempty")));
     }
     floor
+}
+
+pub fn count_safe(floor: &Floor) -> usize {
+    floor
+        .iter()
+        .map(|row| {
+            row.iter()
+                .filter(|&tile| matches!(tile, Tile::Safe))
+                .count()
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -64,5 +77,13 @@ mod tests {
             vec![Trap, Trap, Safe, Safe],
         ];
         assert_eq!(correct, generate_floor(&row));
+    }
+
+    #[test]
+    fn count_safe_test_1() {
+        use Tile::{Safe, Trap};
+        let row = [Safe, Safe, Trap, Trap];
+        let floor = generate_floor(&row);
+        assert_eq!(count_safe(&floor), 6);
     }
 }
