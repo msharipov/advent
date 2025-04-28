@@ -98,6 +98,13 @@ mod tests {
     }
 
     #[test]
+    fn count_safe_test_2() {
+        let row = parse_row(".^^.^.^^^^").unwrap();
+        let floor = generate_floor(&row);
+        assert_eq!(count_safe(&floor), 38);
+    }
+
+    #[test]
     fn parse_row_test_1() {
         use Tile::{Safe, Trap};
         let line = "..^.^";
