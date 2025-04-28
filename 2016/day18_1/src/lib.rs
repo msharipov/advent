@@ -4,6 +4,16 @@ pub enum Tile {
     Trap,
 }
 
+pub fn parse_row(line: &str) -> Vec<Tile> {
+    line.chars()
+        .map(|c| match c {
+            '^' => Tile::Trap,
+            '.' => Tile::Safe,
+            _ => panic!("unexpected input"),
+        })
+        .collect()
+}
+
 fn next_row(row: &[Tile]) -> Vec<Tile> {
     let mut new_row = vec![];
     if row.is_empty() {
@@ -85,5 +95,12 @@ mod tests {
         let row = [Safe, Safe, Trap, Trap];
         let floor = generate_floor(&row);
         assert_eq!(count_safe(&floor), 6);
+    }
+
+    #[test]
+    fn parse_row_test_1() {
+        use Tile::{Safe, Trap};
+        let line = "..^.^";
+        assert_eq!(parse_row(line), vec![Safe, Safe, Trap, Safe, Trap]);
     }
 }
