@@ -37,9 +37,9 @@ fn next_row(row: &[Tile]) -> Vec<Tile> {
 
 type Floor = Vec<Vec<Tile>>;
 
-pub fn generate_floor(row: &[Tile]) -> Floor {
+pub fn generate_floor(row: &[Tile], total_rows: usize) -> Floor {
     let mut floor = vec![row.to_vec()];
-    while floor.len() < row.len() {
+    while floor.len() < total_rows {
         floor.push(next_row(floor.last().expect("must be nonempty")));
     }
     floor
@@ -86,21 +86,21 @@ mod tests {
             vec![Trap, Trap, Safe, Trap],
             vec![Trap, Trap, Safe, Safe],
         ];
-        assert_eq!(correct, generate_floor(&row));
+        assert_eq!(correct, generate_floor(&row, 4));
     }
 
     #[test]
     fn count_safe_test_1() {
         use Tile::{Safe, Trap};
         let row = [Safe, Safe, Trap, Trap];
-        let floor = generate_floor(&row);
+        let floor = generate_floor(&row, 4);
         assert_eq!(count_safe(&floor), 6);
     }
 
     #[test]
     fn count_safe_test_2() {
         let row = parse_row(".^^.^.^^^^").unwrap();
-        let floor = generate_floor(&row);
+        let floor = generate_floor(&row, 10);
         assert_eq!(count_safe(&floor), 38);
     }
 
