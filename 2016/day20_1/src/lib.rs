@@ -1,4 +1,6 @@
-use std::ops::RangeInclusive;
+use std::{collections::HashSet, ops::RangeInclusive};
+
+use sscanf::sscanf;
 
 type IpRange = RangeInclusive<u32>;
 
@@ -16,6 +18,26 @@ fn try_combine(range_1: &IpRange, range_2: &IpRange) -> Option<IpRange> {
         return Some(new_range);
     }
     None
+}
+
+pub fn parse_ranges(lines: &[&str]) -> Result<HashSet<IpRange>, sscanf::Error> {
+    let mut ranges: HashSet<IpRange> = HashSet::new();
+    for line in lines {
+        let (lower, upper) = sscanf!(line, "{u32}-{u32}")?;
+        let mut range = lower..=upper;
+        let mut absorbed = vec![];
+        for other_range in ranges.iter() {
+            if let Some(combined) = try_combine(&range, &other_range) {
+                absorbed.push(other_range.clone());
+                range = combined;
+            }
+        }
+        for old_range in absorbed {
+            ranges.remove(&old_range);
+        }
+        ranges.insert(range);
+    }
+    Ok(ranges)
 }
 
 #[cfg(test)]
@@ -44,5 +66,12 @@ mod tests {
     fn try_combine_test_4() {
         assert_eq!(try_combine(&(2..=17), &(6..=8)), Some(2..=17));
         assert_eq!(try_combine(&(11..=13), &(3..=14)), Some(3..=14));
+    }
+
+    #[test]
+    fn parse_ranges_test_1() {
+        let lines = ["100-145", "79-99", "11-36", "20-25", "52-62", "60-71"];
+        let correct = HashSet::from_iter([11..=36, 52..=71, 79..=145]);
+        assert_eq!(parse_ranges(&lines).unwrap(), correct);
     }
 }
