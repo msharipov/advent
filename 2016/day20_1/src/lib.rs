@@ -40,6 +40,15 @@ pub fn parse_ranges(lines: &[&str]) -> Result<HashSet<IpRange>, sscanf::Error> {
     Ok(ranges)
 }
 
+pub fn lowest_allowed_ip(ranges: &HashSet<IpRange>) -> Option<u32> {
+    let lowest_range = ranges.iter().min_by_key(|range| range.start())?;
+    if lowest_range.end() == &u32::MAX {
+        None
+    } else {
+        Some(*lowest_range.end() + 1)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,5 +82,17 @@ mod tests {
         let lines = ["100-145", "79-99", "11-36", "20-25", "52-62", "60-71"];
         let correct = HashSet::from_iter([11..=36, 52..=71, 79..=145]);
         assert_eq!(parse_ranges(&lines).unwrap(), correct);
+    }
+
+    #[test]
+    fn lowest_allowed_ip_test_1() {
+        let ranges = HashSet::from_iter([0..=14, 17..=28, 32..=40]);
+        assert_eq!(lowest_allowed_ip(&ranges), Some(15));
+    }
+
+    #[test]
+    fn lowest_allowed_ip_test_2() {
+        let ranges = HashSet::from_iter([0..=u32::MAX]);
+        assert_eq!(lowest_allowed_ip(&ranges), None);
     }
 }
