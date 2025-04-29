@@ -14,33 +14,35 @@ impl ElfCircle {
             present: count,
         }
     }
-}
 
-fn next_unskipped(skipped: &[bool], thief_index: usize) -> Option<usize> {
-    if !matches!(skipped.get(thief_index), Some(false)) {
-        return None;
-    }
-    let mut current_index = thief_index;
-    let len = skipped.len();
-    loop {
-        current_index = (current_index + 1) % len;
-        if !skipped[current_index] {
-            return Some(current_index);
+    fn next_unskipped(&self, thief_index: usize) -> Option<usize> {
+        if !matches!(self.skipped.get(thief_index), Some(false)) {
+            return None;
+        }
+        let mut current_index = thief_index;
+        let len = self.skipped.len();
+        loop {
+            current_index = (current_index + 1) % len;
+            if !self.skipped[current_index] {
+                return Some(current_index);
+            }
         }
     }
 }
 
 pub fn last_elf_index(count: NonZero<usize>) -> usize {
-    let mut skipped = vec![false; count.into()];
+    let mut circle = ElfCircle::new(count);
     let mut current_thief = 0;
     loop {
-        let target = next_unskipped(&skipped, current_thief)
+        let target = circle
+            .next_unskipped(current_thief)
             .expect("there should always be at least one unskipped elf");
         if target == current_thief {
             return current_thief;
         }
-        skipped[target] = true;
-        current_thief = next_unskipped(&skipped, current_thief)
+        circle.skipped[target] = true;
+        current_thief = circle
+            .next_unskipped(current_thief)
             .expect("there should always be at least one unskipped elf");
     }
 }
@@ -50,21 +52,30 @@ mod tests {
     use super::*;
 
     #[test]
-    fn get_target_test_1() {
-        assert_eq!(
-            next_unskipped(&[true, true, false, false, true], 3),
-            Some(2)
-        );
+    fn next_unskipped_test_1() {
+        let circle = ElfCircle {
+            skipped: vec![true, true, false, false, true],
+            present: 2,
+        };
+        assert_eq!(circle.next_unskipped(3), Some(2));
     }
 
     #[test]
-    fn get_target_test_2() {
-        assert_eq!(next_unskipped(&[true, true, true, false, true], 3), Some(3));
+    fn next_unskipped_test_2() {
+        let circle = ElfCircle {
+            skipped: vec![true, true, true, false, true],
+            present: 1,
+        };
+        assert_eq!(circle.next_unskipped(3), Some(3));
     }
 
     #[test]
-    fn get_target_test_3() {
-        assert_eq!(next_unskipped(&[true, true, true, true, true], 3), None);
+    fn next_unskipped_test_3() {
+        let circle = ElfCircle {
+            skipped: vec![true, true, true, true, true],
+            present: 0,
+        };
+        assert_eq!(circle.next_unskipped(3), None);
     }
 
     #[test]
