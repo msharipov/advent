@@ -2,65 +2,54 @@ use std::num::NonZero;
 
 #[derive(Debug, PartialEq)]
 pub struct ElfCircle {
-    skipped: Vec<bool>,
-    present: usize,
+    present: Vec<usize>,
 }
 
 impl ElfCircle {
     pub fn new(count: NonZero<usize>) -> Self {
         let count: usize = count.into();
         ElfCircle {
-            skipped: vec![false; count],
-            present: count,
+            present: (1..=count).collect(),
         }
     }
 
-    fn next_unskipped(&self, thief_index: usize) -> Option<usize> {
-        if !matches!(self.skipped.get(thief_index), Some(false)) {
-            return None;
-        }
-        let mut current_index = thief_index;
-        let len = self.skipped.len();
-        loop {
-            current_index = (current_index + 1) % len;
-            if !self.skipped[current_index] {
-                return Some(current_index);
-            }
-        }
+    fn next_unskipped(&self, thief_index: usize) -> usize {
+        (thief_index + 1) % self.present.len()
     }
 
-    fn next_target(&self, thief_index: usize) -> Option<usize> {
-        if !matches!(self.skipped.get(thief_index), Some(false)) {
-            return None;
+    fn next_target(&self, thief_index: usize) -> usize {
+        let len = self.present.len();
+        let skip = len / 2;
+        (thief_index + skip) % len
+    }
+
+    fn try_steal(&mut self, target_index: usize) -> Result<(), &str> {
+        if target_index >= self.present.len() {
+            return Err("target is invalid");
         }
-        let mut current_index = thief_index;
-        let skip = self.present / 2;
-        let len = self.skipped.len();
-        let mut visited = 0;
-        while visited < skip {
-            current_index = (current_index + 1) % len;
-            if !self.skipped[current_index] {
-                visited += 1;
-            }
+        self.present.remove(target_index);
+        if self.present.len() % 10000 == 0 {
+            eprintln!("{} left", self.present.len());
         }
-        Some(current_index)
+        Ok(())
     }
 }
 
-pub fn last_elf_index(count: NonZero<usize>) -> usize {
+pub fn last_elf(count: NonZero<usize>) -> usize {
     let mut circle = ElfCircle::new(count);
     let mut current_thief = 0;
     loop {
-        let target = circle
-            .next_unskipped(current_thief)
-            .expect("there should always be at least one unskipped elf");
+        let target = circle.next_target(current_thief);
         if target == current_thief {
-            return current_thief;
+            return circle.present[current_thief];
         }
-        circle.skipped[target] = true;
-        current_thief = circle
-            .next_unskipped(current_thief)
-            .expect("there should always be at least one unskipped elf");
+        if target < current_thief {
+            current_thief -= 1;
+        }
+        circle
+            .try_steal(target)
+            .expect("target should be in bounds");
+        current_thief = circle.next_unskipped(current_thief);
     }
 }
 
@@ -71,38 +60,27 @@ mod tests {
     #[test]
     fn next_unskipped_test_1() {
         let circle = ElfCircle {
-            skipped: vec![true, true, false, false, true],
-            present: 2,
+            present: vec![2, 3],
         };
-        assert_eq!(circle.next_unskipped(3), Some(2));
+        assert_eq!(circle.next_unskipped(0), 1);
     }
 
     #[test]
     fn next_unskipped_test_2() {
         let circle = ElfCircle {
-            skipped: vec![true, true, true, false, true],
-            present: 1,
+            present: vec![2, 3, 5],
         };
-        assert_eq!(circle.next_unskipped(3), Some(3));
-    }
-
-    #[test]
-    fn next_unskipped_test_3() {
-        let circle = ElfCircle {
-            skipped: vec![true, true, true, true, true],
-            present: 0,
-        };
-        assert_eq!(circle.next_unskipped(3), None);
+        assert_eq!(circle.next_unskipped(2), 0);
     }
 
     #[test]
     fn last_elf_index_test_1() {
-        assert_eq!(last_elf_index(1.try_into().unwrap()), 0);
+        assert_eq!(last_elf(1.try_into().unwrap()), 1);
     }
 
     #[test]
     fn last_elf_index_test_2() {
-        assert_eq!(last_elf_index(5.try_into().unwrap()), 2);
+        assert_eq!(last_elf(5.try_into().unwrap()), 2);
     }
 
     #[test]
@@ -110,8 +88,7 @@ mod tests {
         assert_eq!(
             ElfCircle::new(3.try_into().unwrap()),
             ElfCircle {
-                skipped: vec![false; 3],
-                present: 3
+                present: vec![1, 2, 3]
             }
         )
     }
@@ -119,24 +96,36 @@ mod tests {
     #[test]
     fn next_target_test_1() {
         let circle = ElfCircle::new(8.try_into().unwrap());
-        assert_eq!(circle.next_target(2), Some(6));
+        assert_eq!(circle.next_target(2), 6);
     }
 
     #[test]
     fn next_target_test_2() {
         let circle = ElfCircle {
-            skipped: vec![false, false, true, false, true, true, true, false, false],
-            present: 5,
+            present: vec![1, 2, 4, 8, 9],
         };
-        assert_eq!(circle.next_target(7), Some(0));
+        assert_eq!(circle.next_target(2), 4);
     }
 
     #[test]
-    fn next_target_test_3() {
-        let circle = ElfCircle {
-            skipped: vec![false, false, true, false, true, true, true, false, false],
-            present: 5,
+    fn try_steal_test_1() {
+        let mut circle = ElfCircle {
+            present: vec![1, 7, 8, 10, 11],
         };
-        assert_eq!(circle.next_target(2), None);
+        circle.try_steal(3).unwrap();
+        assert_eq!(
+            circle,
+            ElfCircle {
+                present: vec![1, 7, 8, 11],
+            }
+        );
+        circle.try_steal(3).unwrap();
+        assert_eq!(
+            circle,
+            ElfCircle {
+                present: vec![1, 7, 8],
+            }
+        );
+        assert!(circle.try_steal(3).is_err());
     }
 }
