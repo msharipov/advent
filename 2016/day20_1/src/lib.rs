@@ -27,7 +27,7 @@ pub fn parse_ranges(lines: &[&str]) -> Result<HashSet<IpRange>, sscanf::Error> {
         let mut range = lower..=upper;
         let mut absorbed = vec![];
         for other_range in ranges.iter() {
-            if let Some(combined) = try_combine(&range, &other_range) {
+            if let Some(combined) = try_combine(&range, other_range) {
                 absorbed.push(other_range.clone());
                 range = combined;
             }
