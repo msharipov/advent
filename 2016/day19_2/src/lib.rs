@@ -28,6 +28,23 @@ impl ElfCircle {
             }
         }
     }
+
+    fn next_target(&self, thief_index: usize) -> Option<usize> {
+        if !matches!(self.skipped.get(thief_index), Some(false)) {
+            return None;
+        }
+        let mut current_index = thief_index;
+        let skip = self.present / 2;
+        let len = self.skipped.len();
+        let mut visited = 0;
+        while visited < skip {
+            current_index = (current_index + 1) % len;
+            if !self.skipped[current_index] {
+                visited += 1;
+            }
+        }
+        Some(current_index)
+    }
 }
 
 pub fn last_elf_index(count: NonZero<usize>) -> usize {
@@ -97,5 +114,29 @@ mod tests {
                 present: 3
             }
         )
+    }
+
+    #[test]
+    fn next_target_test_1() {
+        let circle = ElfCircle::new(8.try_into().unwrap());
+        assert_eq!(circle.next_target(2), Some(6));
+    }
+
+    #[test]
+    fn next_target_test_2() {
+        let circle = ElfCircle {
+            skipped: vec![false, false, true, false, true, true, true, false, false],
+            present: 5,
+        };
+        assert_eq!(circle.next_target(7), Some(0));
+    }
+
+    #[test]
+    fn next_target_test_3() {
+        let circle = ElfCircle {
+            skipped: vec![false, false, true, false, true, true, true, false, false],
+            present: 5,
+        };
+        assert_eq!(circle.next_target(2), None);
     }
 }
