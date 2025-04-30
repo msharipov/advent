@@ -1,5 +1,5 @@
 use sscanf::sscanf;
-use std::str::FromStr;
+use std::{mem::swap, str::FromStr};
 
 #[derive(Debug, PartialEq)]
 pub enum Operation {
@@ -45,6 +45,32 @@ pub fn parse_instructions(lines: &[&str]) -> Result<Vec<Operation>, sscanf::Erro
     lines.iter().map(|line| line.parse::<Operation>()).collect()
 }
 
+#[derive(Debug, PartialEq)]
+enum OperationErr {
+    OutOfBounds { index: usize },
+    LetterNotFound { letter: char },
+}
+
+fn swap_position(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    let char_at_x = match char_vec.get(pos_x) {
+        Some(&c) => c,
+        None => return Err(OperationErr::OutOfBounds { index: pos_x }),
+    };
+    match char_vec.get(pos_y) {
+        Some(&c) => char_vec[pos_x] = c,
+        None => return Err(OperationErr::OutOfBounds { index: pos_y }),
+    };
+    char_vec[pos_y] = char_at_x;
+    Ok(char_vec.iter().collect())
+}
+
+pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
+    match op {
+        _ => todo!(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,5 +94,20 @@ mod tests {
             Operation::Reverse(6, 12),
         ];
         assert_eq!(correct, parse_instructions(&lines).unwrap());
+    }
+
+    #[test]
+    fn swap_position_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(swap_position(s, 7, 2), Ok("abhdefgc".to_owned()));
+    }
+
+    #[test]
+    fn swap_position_test_2() {
+        let s = "abcdefgh";
+        assert_eq!(
+            swap_position(s, 3, 9),
+            Err(OperationErr::OutOfBounds { index: 9 })
+        );
     }
 }
