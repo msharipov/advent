@@ -51,7 +51,7 @@ enum OperationErr {
     LetterNotFound { letter: char },
 }
 
-fn swap_position(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> {
+fn swap_positions(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> {
     let mut char_vec: Vec<_> = s.chars().collect();
     if pos_x >= char_vec.len() {
         return Err(OperationErr::OutOfBounds { index: pos_x });
@@ -109,25 +109,25 @@ mod tests {
     }
 
     #[test]
-    fn swap_position_test_1() {
+    fn swap_positions_test_1() {
         let s = "abcdefgh";
-        assert_eq!(swap_position(s, 7, 2), Ok("abhdefgc".to_owned()));
+        assert_eq!(swap_positions(s, 7, 2), Ok("abhdefgc".to_owned()));
     }
 
     #[test]
-    fn swap_position_test_2() {
+    fn swap_positions_test_2() {
         let s = "abcdefgh";
         assert_eq!(
-            swap_position(s, 3, 9),
+            swap_positions(s, 3, 9),
             Err(OperationErr::OutOfBounds { index: 9 })
         );
     }
 
     #[test]
-    fn swap_position_test_3() {
+    fn swap_positions_test_3() {
         let s = "abcdefgh";
         assert_eq!(
-            swap_position(s, 11, 5),
+            swap_positions(s, 11, 5),
             Err(OperationErr::OutOfBounds { index: 11 })
         );
     }
