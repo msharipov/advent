@@ -1,5 +1,5 @@
 use sscanf::sscanf;
-use std::{mem::swap, str::FromStr};
+use std::str::FromStr;
 
 #[derive(Debug, PartialEq)]
 pub enum Operation {
@@ -65,6 +65,20 @@ fn swap_position(s: &str, pos_x: usize, pos_y: usize) -> Result<String, Operatio
     Ok(char_vec.iter().collect())
 }
 
+fn swap_letters(s: &str, letter_x: char, letter_y: char) -> Result<String, OperationErr> {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    let index_x = match char_vec.iter().position(|&c| c == letter_x) {
+        Some(pos) => pos,
+        None => return Err(OperationErr::LetterNotFound { letter: letter_x }),
+    };
+    let index_y = match char_vec.iter().position(|&c| c == letter_y) {
+        Some(pos) => pos,
+        None => return Err(OperationErr::LetterNotFound { letter: letter_y }),
+    };
+    char_vec.swap(index_x, index_y);
+    Ok(char_vec.iter().collect())
+}
+
 pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
     match op {
         _ => todo!(),
@@ -108,6 +122,39 @@ mod tests {
         assert_eq!(
             swap_position(s, 3, 9),
             Err(OperationErr::OutOfBounds { index: 9 })
+        );
+    }
+
+    #[test]
+    fn swap_position_test_3() {
+        let s = "abcdefgh";
+        assert_eq!(
+            swap_position(s, 11, 5),
+            Err(OperationErr::OutOfBounds { index: 11 })
+        );
+    }
+
+    #[test]
+    fn swap_letters_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(swap_letters(s, 'b', 'e'), Ok("aecdbfgh".to_owned()));
+    }
+
+    #[test]
+    fn swap_letters_test_2() {
+        let s = "abcdefgh";
+        assert_eq!(
+            swap_letters(s, 'b', 'w'),
+            Err(OperationErr::LetterNotFound { letter: 'w' })
+        );
+    }
+
+    #[test]
+    fn swap_letters_test_3() {
+        let s = "abcdefgh";
+        assert_eq!(
+            swap_letters(s, 'p', 'g'),
+            Err(OperationErr::LetterNotFound { letter: 'p' })
         );
     }
 }
