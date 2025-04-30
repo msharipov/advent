@@ -53,15 +53,13 @@ enum OperationErr {
 
 fn swap_position(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> {
     let mut char_vec: Vec<_> = s.chars().collect();
-    let char_at_x = match char_vec.get(pos_x) {
-        Some(&c) => c,
-        None => return Err(OperationErr::OutOfBounds { index: pos_x }),
-    };
-    match char_vec.get(pos_y) {
-        Some(&c) => char_vec[pos_x] = c,
-        None => return Err(OperationErr::OutOfBounds { index: pos_y }),
-    };
-    char_vec[pos_y] = char_at_x;
+    if pos_x >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: pos_x });
+    }
+    if pos_y >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: pos_y });
+    }
+    char_vec.swap(pos_x, pos_y);
     Ok(char_vec.iter().collect())
 }
 
