@@ -114,6 +114,19 @@ fn reverse(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> 
     Ok(char_vec.iter().collect())
 }
 
+fn move_position(s: &str, initial: usize, final_pos: usize) -> Result<String, OperationErr> {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    if initial >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: initial });
+    }
+    if final_pos >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: final_pos });
+    }
+    let letter = char_vec.remove(initial);
+    char_vec.insert(final_pos, letter);
+    Ok(char_vec.iter().collect())
+}
+
 pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
     match op {
         _ => todo!(),
@@ -248,5 +261,41 @@ mod tests {
             reverse(s, 1, 10),
             Err(OperationErr::OutOfBounds { index: 10 })
         );
+    }
+
+    #[test]
+    fn move_position_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(move_position(s, 6, 0), Ok("gabcdefh".to_owned()))
+    }
+
+    #[test]
+    fn move_position_test_2() {
+        let s = "abcdefgh";
+        assert_eq!(move_position(s, 1, 4), Ok("acdebfgh".to_owned()))
+    }
+
+    #[test]
+    fn move_position_test_3() {
+        let s = "abcdefgh";
+        assert_eq!(move_position(s, 5, 5), Ok("abcdefgh".to_owned()))
+    }
+
+    #[test]
+    fn move_position_test_4() {
+        let s = "abcdefgh";
+        assert_eq!(
+            move_position(s, 9, 5),
+            Err(OperationErr::OutOfBounds { index: 9 })
+        )
+    }
+
+    #[test]
+    fn move_position_test_5() {
+        let s = "abcdefgh";
+        assert_eq!(
+            move_position(s, 6, 12),
+            Err(OperationErr::OutOfBounds { index: 12 })
+        )
     }
 }
