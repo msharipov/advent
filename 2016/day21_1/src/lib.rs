@@ -102,6 +102,18 @@ fn rotate_based_on_letter(s: &str, letter: char) -> Result<String, OperationErr>
     Ok(char_vec.iter().collect())
 }
 
+fn reverse(s: &str, pos_x: usize, pos_y: usize) -> Result<String, OperationErr> {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    if pos_x >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: pos_x });
+    }
+    if pos_y >= char_vec.len() {
+        return Err(OperationErr::OutOfBounds { index: pos_y });
+    }
+    char_vec[pos_x..=pos_y].reverse();
+    Ok(char_vec.iter().collect())
+}
+
 pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
     match op {
         _ => todo!(),
@@ -211,6 +223,30 @@ mod tests {
         assert_eq!(
             rotate_based_on_letter(s, 'q'),
             Err(OperationErr::LetterNotFound { letter: 'q' })
+        );
+    }
+
+    #[test]
+    fn reverse_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(reverse(s, 0, 4), Ok("edcbafgh".to_owned()));
+    }
+
+    #[test]
+    fn reverse_test_2() {
+        let s = "abcdefgh";
+        assert_eq!(
+            reverse(s, 11, 4),
+            Err(OperationErr::OutOfBounds { index: 11 })
+        );
+    }
+
+    #[test]
+    fn reverse_test_3() {
+        let s = "abcdefgh";
+        assert_eq!(
+            reverse(s, 1, 10),
+            Err(OperationErr::OutOfBounds { index: 10 })
         );
     }
 }
