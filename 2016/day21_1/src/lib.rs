@@ -1,9 +1,9 @@
 use sscanf::sscanf;
 use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Operation {
-    SwapPosition(usize, usize),
+    SwapPositions(usize, usize),
     SwapLetters(char, char),
     RotateLeftFixed(usize),
     RotateRightFixed(usize),
@@ -17,7 +17,7 @@ impl FromStr for Operation {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if let Ok((x, y)) = sscanf!(s, "swap position {usize} with position {usize}") {
-            return Ok(Operation::SwapPosition(x, y));
+            return Ok(Operation::SwapPositions(x, y));
         }
         if let Ok((x, y)) = sscanf!(s, "swap letter {char} with letter {char}") {
             return Ok(Operation::SwapLetters(x, y));
@@ -46,7 +46,7 @@ pub fn parse_instructions(lines: &[&str]) -> Result<Vec<Operation>, sscanf::Erro
 }
 
 #[derive(Debug, PartialEq)]
-enum OperationErr {
+pub enum OperationErr {
     OutOfBounds { index: usize },
     LetterNotFound { letter: char },
 }
@@ -127,10 +127,26 @@ fn move_position(s: &str, initial: usize, final_pos: usize) -> Result<String, Op
     Ok(char_vec.iter().collect())
 }
 
-pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
-    match op {
-        _ => todo!(),
+type ApplyOperationErr = (String, Operation, OperationErr);
+
+pub fn apply_operations(s: &str, ops: &[Operation]) -> Result<String, ApplyOperationErr> {
+    let mut s = s.to_owned();
+    for op in ops {
+        let result = match op {
+            Operation::SwapPositions(x, y) => swap_positions(&s, *x, *y),
+            Operation::SwapLetters(x, y) => swap_letters(&s, *x, *y),
+            Operation::RotateLeftFixed(dist) => Ok(rotate_left(&s, *dist)),
+            Operation::RotateRightFixed(dist) => Ok(rotate_right(&s, *dist)),
+            Operation::RotateBasedOnLetter(c) => rotate_based_on_letter(&s, *c),
+            Operation::Reverse(x, y) => reverse(&s, *x, *y),
+            Operation::Move(x, y) => move_position(&s, *x, *y),
+        };
+        match result {
+            Ok(new_s) => s = new_s,
+            Err(e) => return Err((s, op.to_owned(), e)),
+        };
     }
+    Ok(s)
 }
 
 #[cfg(test)]
@@ -148,7 +164,7 @@ mod tests {
             "reverse positions 6 through 12",
         ];
         let correct = vec![
-            Operation::SwapPosition(4, 0),
+            Operation::SwapPositions(4, 0),
             Operation::SwapLetters('d', 'b'),
             Operation::RotateLeftFixed(1),
             Operation::Move(1, 4),
@@ -297,5 +313,22 @@ mod tests {
             move_position(s, 6, 12),
             Err(OperationErr::OutOfBounds { index: 12 })
         )
+    }
+
+    #[test]
+    fn apply_operations_test_1() {
+        use Operation::*;
+        let s = "abcde";
+        let ops = [
+            SwapPositions(4, 0),
+            SwapLetters('d', 'b'),
+            Reverse(0, 4),
+            RotateLeftFixed(1),
+            Move(1, 4),
+            Move(3, 0),
+            RotateBasedOnLetter('b'),
+            RotateBasedOnLetter('d'),
+        ];
+        assert_eq!(apply_operations(s, &ops), Ok("decab".to_owned()));
     }
 }
