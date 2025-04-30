@@ -89,6 +89,19 @@ fn rotate_right(s: &str, distance: usize) -> String {
     char_vec.iter().collect()
 }
 
+fn rotate_based_on_letter(s: &str, letter: char) -> Result<String, OperationErr> {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    let index = match char_vec.iter().position(|&c| c == letter) {
+        Some(i) => i,
+        None => return Err(OperationErr::LetterNotFound { letter }),
+    };
+    char_vec.rotate_right(1 + index);
+    if index >= 4 {
+        char_vec.rotate_right(1);
+    }
+    Ok(char_vec.iter().collect())
+}
+
 pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
     match op {
         _ => todo!(),
@@ -178,5 +191,26 @@ mod tests {
     fn rotate_right_test_1() {
         let s = "abcdefgh";
         assert_eq!(rotate_right(s, 3), "fghabcde");
+    }
+
+    #[test]
+    fn rotate_based_on_letter_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(rotate_based_on_letter(s, 'b'), Ok("ghabcdef".to_owned()));
+    }
+
+    #[test]
+    fn rotate_based_on_letter_test_2() {
+        let s = "abcdefgh";
+        assert_eq!(rotate_based_on_letter(s, 'f'), Ok("bcdefgha".to_owned()));
+    }
+
+    #[test]
+    fn rotate_based_on_letter_test_3() {
+        let s = "abcdefgh";
+        assert_eq!(
+            rotate_based_on_letter(s, 'q'),
+            Err(OperationErr::LetterNotFound { letter: 'q' })
+        );
     }
 }
