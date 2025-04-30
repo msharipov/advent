@@ -167,6 +167,20 @@ pub fn apply_operations(s: &str, ops: &[Operation]) -> Result<String, ApplyOpera
     Ok(s)
 }
 
+pub fn invert_operations(ops: &[Operation]) -> Vec<Operation> {
+    ops.iter()
+        .rev()
+        .map(|op| match op {
+            Operation::RotateLeftFixed(dist) => Operation::RotateRightFixed(*dist),
+            Operation::RotateRightFixed(dist) => Operation::RotateLeftFixed(*dist),
+            Operation::Move(x, y) => Operation::Move(*y, *x),
+            Operation::RotateBasedOnLetter(c) => Operation::RotateBasedOnLetterInv(*c),
+            Operation::RotateBasedOnLetterInv(c) => Operation::RotateBasedOnLetter(*c),
+            _ => op.clone(),
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -393,5 +407,28 @@ mod tests {
             rotate_based_on_letter_inv(s, 'c'),
             Err(OperationErr::NoInverse)
         );
+    }
+
+    #[test]
+    fn invert_operations_test_1() {
+        use Operation::*;
+        let s = "abcdefgh";
+        let ops = [
+            SwapPositions(4, 0),
+            SwapLetters('d', 'b'),
+            Reverse(0, 4),
+            RotateLeftFixed(1),
+            Move(1, 4),
+            Move(3, 0),
+            RotateBasedOnLetter('b'),
+            RotateBasedOnLetter('d'),
+        ];
+        assert_eq!(apply_operations(s, &ops), Ok("fbdecgha".to_owned()));
+        let inverted = invert_operations(&ops);
+        assert_eq!(
+            apply_operations("fbdecgha", &inverted),
+            Ok("abcdefgh".to_owned())
+        );
+        assert_eq!(invert_operations(&inverted), ops);
     }
 }
