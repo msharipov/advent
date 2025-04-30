@@ -77,6 +77,18 @@ fn swap_letters(s: &str, letter_x: char, letter_y: char) -> Result<String, Opera
     Ok(char_vec.iter().collect())
 }
 
+fn rotate_left(s: &str, distance: usize) -> String {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    char_vec.rotate_left(distance);
+    char_vec.iter().collect()
+}
+
+fn rotate_right(s: &str, distance: usize) -> String {
+    let mut char_vec: Vec<_> = s.chars().collect();
+    char_vec.rotate_right(distance);
+    char_vec.iter().collect()
+}
+
 pub fn apply_operation(s: &str, op: &Operation) -> Result<String, String> {
     match op {
         _ => todo!(),
@@ -154,5 +166,17 @@ mod tests {
             swap_letters(s, 'p', 'g'),
             Err(OperationErr::LetterNotFound { letter: 'p' })
         );
+    }
+
+    #[test]
+    fn rotate_left_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(rotate_left(s, 2), "cdefghab");
+    }
+
+    #[test]
+    fn rotate_right_test_1() {
+        let s = "abcdefgh";
+        assert_eq!(rotate_right(s, 3), "fghabcde");
     }
 }
