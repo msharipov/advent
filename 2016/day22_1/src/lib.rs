@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use sscanf::sscanf;
 use std::str::FromStr;
 
@@ -21,6 +22,14 @@ impl FromStr for Node {
     }
 }
 
+pub fn count_viable_pairs(nodes: &[Node]) -> usize {
+    nodes
+        .iter()
+        .permutations(2)
+        .filter(|perm| perm[0].used != 0 && perm[0].used < (perm[1].size - perm[1].used))
+        .count()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -37,5 +46,30 @@ mod tests {
                 used: 62
             }
         );
+    }
+
+    #[test]
+    fn count_viable_pairs_test_1() {
+        let nodes = [
+            Node {
+                x: 11,
+                y: 8,
+                size: 25,
+                used: 0,
+            },
+            Node {
+                x: 2,
+                y: 26,
+                size: 14,
+                used: 11,
+            },
+            Node {
+                x: 10,
+                y: 3,
+                size: 21,
+                used: 6,
+            },
+        ];
+        assert_eq!(count_viable_pairs(&nodes), 3);
     }
 }
