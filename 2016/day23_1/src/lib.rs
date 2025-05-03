@@ -30,7 +30,7 @@ pub enum Operand {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Instruction {
-    Cpy(Operand, Register),
+    Cpy(Operand, Operand),
     Inc(Register),
     Dec(Register),
     Jnz(Operand, i64),
@@ -42,11 +42,11 @@ impl FromStr for Instruction {
         if let Ok((x, y)) = sscanf!(s, "cpy {:/a|b|c|d/} {:/a|b|c|d/}", &str, &str) {
             let x = x.parse::<Register>()?;
             let y = y.parse::<Register>()?;
-            return Ok(Instruction::Cpy(Operand::Reg(x), y));
+            return Ok(Instruction::Cpy(Operand::Reg(x), Operand::Reg(y)));
         }
         if let Ok((x, y)) = sscanf!(s, "cpy {i64} {:/a|b|c|d/}", &str) {
             let y = y.parse::<Register>()?;
-            return Ok(Instruction::Cpy(Operand::Value(x), y));
+            return Ok(Instruction::Cpy(Operand::Value(x), Operand::Reg(y)));
         }
         if let Ok(reg) = sscanf!(s, "inc {:/a|b|c|d/}", &str) {
             let reg = reg.parse::<Register>()?;
@@ -117,13 +117,15 @@ impl Computer {
         *reg = val;
     }
 
-    fn cpy(&mut self, op_from: Operand, op_to: Register) {
-        match op_from {
-            Operand::Reg(reg) => {
-                self.set_reg(op_to, self.read_reg(reg));
-            }
-            Operand::Value(val) => {
-                self.set_reg(op_to, val);
+    fn cpy(&mut self, op_from: Operand, op_to: Operand) {
+        if let Operand::Reg(op_to) = op_to {
+            match op_from {
+                Operand::Reg(reg) => {
+                    self.set_reg(op_to, self.read_reg(reg));
+                }
+                Operand::Value(val) => {
+                    self.set_reg(op_to, val);
+                }
             }
         }
         self.iar += 1;
@@ -209,8 +211,8 @@ mod tests {
             "jnz 5 12",
         ];
         let correct = vec![
-            Cpy(Operand::Reg(Register::B), Register::A),
-            Cpy(Operand::Value(12), Register::C),
+            Cpy(Operand::Reg(Register::B), Operand::Reg(Register::A)),
+            Cpy(Operand::Value(12), Operand::Reg(Register::C)),
             Dec(Register::D),
             Inc(Register::C),
             Jnz(Operand::Reg(Register::A), -19),
@@ -238,7 +240,7 @@ mod tests {
         comp.set_reg(Register::A, 18);
         comp.set_reg(Register::B, -12);
         assert_eq!(comp.read_reg(Register::A), 18);
-        comp.cpy(Operand::Reg(Register::B), Register::A);
+        comp.cpy(Operand::Reg(Register::B), Operand::Reg(Register::A));
         assert_eq!(comp.read_reg(Register::A), -12);
     }
 
@@ -247,7 +249,7 @@ mod tests {
         let mut comp = Computer::new(&[]);
         comp.set_reg(Register::A, 18);
         assert_eq!(comp.read_reg(Register::A), 18);
-        comp.cpy(Operand::Value(45), Register::A);
+        comp.cpy(Operand::Value(45), Operand::Reg(Register::A));
         assert_eq!(comp.read_reg(Register::A), 45);
     }
 
