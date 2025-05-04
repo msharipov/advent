@@ -33,7 +33,7 @@ pub enum Instruction {
     Cpy(Operand, Operand),
     Inc(Register),
     Dec(Register),
-    Jnz(Operand, i64),
+    Jnz(Operand, Operand),
 }
 
 impl FromStr for Instruction {
@@ -58,10 +58,16 @@ impl FromStr for Instruction {
         }
         if let Ok((reg, jump_len)) = sscanf!(s, "jnz {:/a|b|c|d/} {i64}", &str) {
             let reg = reg.parse::<Register>()?;
-            return Ok(Instruction::Jnz(Operand::Reg(reg), jump_len));
+            return Ok(Instruction::Jnz(
+                Operand::Reg(reg),
+                Operand::Value(jump_len),
+            ));
         }
         if let Ok((val, jump_len)) = sscanf!(s, "jnz {i64} {i64}") {
-            return Ok(Instruction::Jnz(Operand::Value(val), jump_len));
+            return Ok(Instruction::Jnz(
+                Operand::Value(val),
+                Operand::Value(jump_len),
+            ));
         }
         Err(Self::Err::MatchFailed)
     }
@@ -141,13 +147,16 @@ impl Computer {
         self.iar += 1;
     }
 
-    fn jnz(&mut self, cond: Operand, jump_len: i64) {
+    fn jnz(&mut self, cond: Operand, jump_len: Operand) {
         let val = match cond {
             Operand::Value(val) => val,
             Operand::Reg(reg) => self.read_reg(reg),
         };
         if val != 0 {
-            self.iar += jump_len;
+            self.iar += match jump_len {
+                Operand::Value(val) => val,
+                Operand::Reg(r) => self.read_reg(r),
+            };
         } else {
             self.iar += 1;
         }
@@ -215,8 +224,8 @@ mod tests {
             Cpy(Operand::Value(12), Operand::Reg(Register::C)),
             Dec(Register::D),
             Inc(Register::C),
-            Jnz(Operand::Reg(Register::A), -19),
-            Jnz(Operand::Value(5), 12),
+            Jnz(Operand::Reg(Register::A), Operand::Value(-19)),
+            Jnz(Operand::Value(5), Operand::Value(12)),
         ];
         assert_eq!(parse_instructions(&lines).unwrap(), correct);
     }
@@ -280,7 +289,7 @@ mod tests {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
         comp.set_reg(Register::B, 5);
-        comp.jnz(Operand::Reg(Register::B), 14);
+        comp.jnz(Operand::Reg(Register::B), Operand::Value(14));
         assert_eq!(comp.iar, 14);
     }
 
@@ -288,7 +297,7 @@ mod tests {
     fn jnz_test_2() {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
-        comp.jnz(Operand::Reg(Register::B), 14);
+        comp.jnz(Operand::Reg(Register::B), Operand::Value(14));
         assert_eq!(comp.iar, 1);
     }
 
@@ -296,7 +305,7 @@ mod tests {
     fn jnz_test_3() {
         let mut comp = Computer::new(&[]);
         assert_eq!(comp.iar, 0);
-        comp.jnz(Operand::Value(11), 14);
+        comp.jnz(Operand::Value(11), Operand::Value(14));
         assert_eq!(comp.iar, 14);
     }
 
