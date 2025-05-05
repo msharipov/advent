@@ -34,6 +34,7 @@ pub enum Instruction {
     Inc(Register),
     Dec(Register),
     Jnz(Operand, Operand),
+    Tgl(Register),
 }
 
 impl FromStr for Instruction {
@@ -68,6 +69,10 @@ impl FromStr for Instruction {
                 Operand::Value(val),
                 Operand::Value(jump_len),
             ));
+        }
+        if let Ok(reg) = sscanf!(s, "tgl {&str:/a|b|c|d/}") {
+            let reg = reg.parse::<Register>()?;
+            return Ok(Instruction::Tgl(reg));
         }
         Err(Self::Err::MatchFailed)
     }
@@ -162,6 +167,24 @@ impl Computer {
         }
     }
 
+    fn tgl(&mut self, reg: Register) {
+        let offset = self.read_reg(reg);
+        let index = self.iar + offset;
+        if index < 0 || index >= self.instructions.len() as i64 {
+            self.iar += 1;
+            return;
+        }
+        let index = index as usize;
+        self.instructions[index] = match self.instructions[index] {
+            Instruction::Cpy(op1, op2) => Instruction::Jnz(op1, op2),
+            Instruction::Jnz(op1, op2) => Instruction::Cpy(op1, op2),
+            Instruction::Dec(op) => Instruction::Inc(op),
+            Instruction::Inc(op) => Instruction::Dec(op),
+            Instruction::Tgl(op) => Instruction::Inc(op),
+        };
+        self.iar += 1;
+    }
+
     pub fn next_step(&mut self) -> Result<(), Halt> {
         use Instruction::*;
         if self.iar < 0 {
@@ -182,6 +205,9 @@ impl Computer {
                     }
                     Jnz(cond, jump_len) => {
                         self.jnz(*cond, *jump_len);
+                    }
+                    Tgl(reg) => {
+                        self.tgl(*reg);
                     }
                 }
                 Ok(())
@@ -218,6 +244,7 @@ mod tests {
             "inc c",
             "jnz a -19",
             "jnz 5 12",
+            "tgl c",
         ];
         let correct = vec![
             Cpy(Operand::Reg(Register::B), Operand::Reg(Register::A)),
@@ -226,6 +253,7 @@ mod tests {
             Inc(Register::C),
             Jnz(Operand::Reg(Register::A), Operand::Value(-19)),
             Jnz(Operand::Value(5), Operand::Value(12)),
+            Tgl(Register::C),
         ];
         assert_eq!(parse_instructions(&lines).unwrap(), correct);
     }
@@ -307,6 +335,38 @@ mod tests {
         assert_eq!(comp.iar, 0);
         comp.jnz(Operand::Value(11), Operand::Value(14));
         assert_eq!(comp.iar, 14);
+    }
+
+    #[test]
+    fn tgl_test_1() {
+        let mut comp = Computer::new(&[
+            Instruction::Tgl(Register::A),
+            Instruction::Tgl(Register::A),
+            Instruction::Tgl(Register::A),
+            Instruction::Tgl(Register::A),
+            Instruction::Tgl(Register::B),
+            Instruction::Inc(Register::C),
+            Instruction::Dec(Register::C),
+            Instruction::Cpy(Operand::Value(0), Operand::Reg(Register::B)),
+            Instruction::Jnz(Operand::Reg(Register::D), Operand::Reg(Register::B)),
+        ]);
+        comp.set_reg(Register::A, 5);
+        comp.set_reg(Register::B, -4);
+        comp.run();
+        assert_eq!(
+            comp.instructions,
+            [
+                Instruction::Inc(Register::A),
+                Instruction::Tgl(Register::A),
+                Instruction::Tgl(Register::A),
+                Instruction::Tgl(Register::A),
+                Instruction::Tgl(Register::B),
+                Instruction::Dec(Register::C),
+                Instruction::Inc(Register::C),
+                Instruction::Jnz(Operand::Value(0), Operand::Reg(Register::B)),
+                Instruction::Cpy(Operand::Reg(Register::D), Operand::Reg(Register::B)),
+            ]
+        )
     }
 
     #[test]
