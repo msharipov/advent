@@ -394,4 +394,16 @@ mod tests {
         assert_eq!(comp.read_reg(Register::C), 20);
         assert_eq!(comp.read_reg(Register::D), 30);
     }
+
+    #[test]
+    fn run_test_2() {
+        let instructions = [
+            "cpy 2 a", "tgl a", "tgl a", "tgl a", "cpy 1 a", "dec a", "dec a",
+        ];
+        let instructions = parse_instructions(&instructions).unwrap();
+        let mut comp = Computer::new(&instructions);
+        comp.set_reg(Register::A, 7);
+        comp.run();
+        assert_eq!(comp.read_reg(Register::A), 3);
+    }
 }
