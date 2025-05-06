@@ -57,6 +57,18 @@ impl FromStr for Instruction {
             let reg = reg.parse::<Register>()?;
             return Ok(Instruction::Dec(reg));
         }
+        if let Ok((cond, jump_len)) = sscanf!(s, "jnz {&str:/a|b|c|d/} {&str:/a|b|c|d/}") {
+            let cond = cond.parse::<Register>()?;
+            let jump_len = jump_len.parse::<Register>()?;
+            return Ok(Instruction::Jnz(Operand::Reg(cond), Operand::Reg(jump_len)));
+        }
+        if let Ok((cond, jump_len)) = sscanf!(s, "jnz {i64} {&str:/a|b|c|d/}") {
+            let jump_len = jump_len.parse::<Register>()?;
+            return Ok(Instruction::Jnz(
+                Operand::Value(cond),
+                Operand::Reg(jump_len),
+            ));
+        }
         if let Ok((reg, jump_len)) = sscanf!(s, "jnz {:/a|b|c|d/} {i64}", &str) {
             let reg = reg.parse::<Register>()?;
             return Ok(Instruction::Jnz(
@@ -64,9 +76,9 @@ impl FromStr for Instruction {
                 Operand::Value(jump_len),
             ));
         }
-        if let Ok((val, jump_len)) = sscanf!(s, "jnz {i64} {i64}") {
+        if let Ok((cond, jump_len)) = sscanf!(s, "jnz {i64} {i64}") {
             return Ok(Instruction::Jnz(
-                Operand::Value(val),
+                Operand::Value(cond),
                 Operand::Value(jump_len),
             ));
         }
@@ -118,7 +130,7 @@ impl Computer {
         }
     }
 
-    fn set_reg(&mut self, reg: Register, val: i64) {
+    pub fn set_reg(&mut self, reg: Register, val: i64) {
         let reg = match reg {
             Register::A => &mut self.ra,
             Register::B => &mut self.rb,
