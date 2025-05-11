@@ -27,15 +27,23 @@ impl TryFrom<char> for Tile {
     }
 }
 
-pub fn parse_map(lines: &[&str]) -> Result<Array2<Tile>, ParseTileError> {
+#[derive(Debug, PartialEq, Error)]
+pub enum ParseMapError {
+    #[error("cannot parse tile")]
+    TileError(#[from] ParseTileError),
+    #[error("line #{line_number} has different length")]
+    ShapeError { line_number: usize },
+}
+
+pub fn parse_map(lines: &[&str]) -> Result<Array2<Tile>, ParseMapError> {
     if lines.is_empty() {
         return Ok(Array2::from_elem((0, 0), Tile::Floor));
     }
     let width = lines[0].len();
     let mut map = vec![];
-    for line in lines {
+    for (i, line) in lines.iter().enumerate() {
         if line.len() != width {
-            panic!("uneven line width")
+            return Err(ParseMapError::ShapeError { line_number: i });
         }
         for c in line.chars() {
             map.push(c.try_into()?);
@@ -73,5 +81,23 @@ mod tests {
             [Wall, Floor, Wall, Floor, Wall]
         ];
         assert_eq!(parse_map(&lines), Ok(correct));
+    }
+
+    #[test]
+    fn parse_map_test_2() {
+        let lines = ["#...2", ".3##", "#.#.#"];
+        assert_eq!(
+            parse_map(&lines),
+            Err(ParseMapError::ShapeError { line_number: 1 })
+        );
+    }
+
+    #[test]
+    fn parse_map_test_3() {
+        let lines = ["#...2", "..3##", "#,#.#"];
+        assert_eq!(
+            parse_map(&lines),
+            Err(ParseMapError::TileError(ParseTileError { c: ',' }))
+        );
     }
 }
