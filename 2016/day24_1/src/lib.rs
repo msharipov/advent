@@ -21,7 +21,7 @@ impl TryFrom<char> for Tile {
         match value {
             '.' => Ok(Tile::Floor),
             '#' => Ok(Tile::Wall),
-            '0'..='9' => Ok(Tile::Marker(value as u8 - '0' as u8)),
+            '0'..='9' => Ok(Tile::Marker(value as u8 - b'0')),
             _ => Err(ParseTileError { c: value }),
         }
     }
