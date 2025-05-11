@@ -27,6 +27,11 @@ impl TryFrom<char> for Tile {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub struct Map {
+    tiles: Array2<Tile>,
+}
+
 #[derive(Debug, PartialEq, Error)]
 pub enum ParseMapError {
     #[error("cannot parse tile")]
@@ -35,21 +40,29 @@ pub enum ParseMapError {
     ShapeError { line_number: usize },
 }
 
-pub fn parse_map(lines: &[&str]) -> Result<Array2<Tile>, ParseMapError> {
-    if lines.is_empty() {
-        return Ok(Array2::from_elem((0, 0), Tile::Floor));
+impl Map {
+    pub fn new(tiles: Array2<Tile>) -> Map {
+        Map { tiles }
     }
-    let width = lines[0].len();
-    let mut map = vec![];
-    for (i, line) in lines.iter().enumerate() {
-        if line.len() != width {
-            return Err(ParseMapError::ShapeError { line_number: i });
+
+    pub fn parse_map(lines: &[&str]) -> Result<Map, ParseMapError> {
+        if lines.is_empty() {
+            return Ok(Map::new(Array2::from_elem((0, 0), Tile::Floor)));
         }
-        for c in line.chars() {
-            map.push(c.try_into()?);
+        let width = lines[0].len();
+        let mut map = vec![];
+        for (i, line) in lines.iter().enumerate() {
+            if line.len() != width {
+                return Err(ParseMapError::ShapeError { line_number: i });
+            }
+            for c in line.chars() {
+                map.push(c.try_into()?);
+            }
         }
+        Ok(Map::new(
+            Array2::from_shape_vec((lines.len(), width), map).unwrap(),
+        ))
     }
-    Ok(Array2::from_shape_vec((lines.len(), width), map).unwrap())
 }
 
 #[cfg(test)]
@@ -75,19 +88,19 @@ mod tests {
     fn parse_map_test_1() {
         use Tile::*;
         let lines = ["#...2", "..3##", "#.#.#"];
-        let correct = array![
+        let correct = Map::new(array![
             [Wall, Floor, Floor, Floor, Marker(2)],
             [Floor, Floor, Marker(3), Wall, Wall],
             [Wall, Floor, Wall, Floor, Wall]
-        ];
-        assert_eq!(parse_map(&lines), Ok(correct));
+        ]);
+        assert_eq!(Map::parse_map(&lines), Ok(correct));
     }
 
     #[test]
     fn parse_map_test_2() {
         let lines = ["#...2", ".3##", "#.#.#"];
         assert_eq!(
-            parse_map(&lines),
+            Map::parse_map(&lines),
             Err(ParseMapError::ShapeError { line_number: 1 })
         );
     }
@@ -96,7 +109,7 @@ mod tests {
     fn parse_map_test_3() {
         let lines = ["#...2", "..3##", "#,#.#"];
         assert_eq!(
-            parse_map(&lines),
+            Map::parse_map(&lines),
             Err(ParseMapError::TileError(ParseTileError { c: ',' }))
         );
     }
