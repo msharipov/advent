@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use ndarray::Array2;
 use thiserror::Error;
 
@@ -63,6 +65,56 @@ impl Map {
             Array2::from_shape_vec((lines.len(), width), map).unwrap(),
         ))
     }
+
+    fn neighbors(&self, (y, x): (usize, usize)) -> Vec<(usize, usize)> {
+        let mut valid_neighbors = vec![];
+        let shape = self.tiles.shape();
+        let y_len = shape[0];
+        let x_len = shape[1];
+        if y > 0 {
+            valid_neighbors.push((y - 1, x));
+        }
+        if x > 0 {
+            valid_neighbors.push((y, x - 1));
+        }
+        if y_len >= 1 && y < y_len - 1 {
+            valid_neighbors.push((y + 1, x));
+        }
+        if x_len >= 1 && x < x_len - 1 {
+            valid_neighbors.push((y, x + 1));
+        }
+        valid_neighbors
+    }
+
+    fn distance(&self, pt1: (usize, usize), pt2: (usize, usize)) -> Option<usize> {
+        if matches!(self.tiles[pt1], Tile::Wall) || matches!(self.tiles[pt2], Tile::Wall) {
+            return None;
+        }
+        let mut step: usize = 0;
+        let mut horizon: HashSet<_> = HashSet::from_iter([pt1]);
+        let mut explored = horizon.clone();
+        loop {
+            if horizon.is_empty() {
+                return None;
+            }
+            if horizon.contains(&pt2) {
+                return Some(step);
+            }
+            step += 1;
+            let mut new_horizon = HashSet::new();
+            for tile in horizon {
+                let neighbors = self.neighbors(tile);
+                for neighbor in neighbors {
+                    if !explored.contains(&neighbor) && !matches!(self.tiles[neighbor], Tile::Wall)
+                    {
+                        new_horizon.insert(neighbor.clone());
+                        explored.insert(neighbor);
+                    }
+                }
+            }
+            horizon = new_horizon;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -112,5 +164,47 @@ mod tests {
             Map::parse_map(&lines),
             Err(ParseMapError::TileError(ParseTileError { c: ',' }))
         );
+    }
+
+    #[test]
+    fn map_distance_test_1() {
+        let lines = [".....", ".....", ".....", ".....", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((0, 1), (4, 4)), Some(7));
+    }
+
+    #[test]
+    fn map_distance_test_2() {
+        let lines = [".....", ".....", "#####", ".....", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((0, 1), (4, 4)), None);
+    }
+
+    #[test]
+    fn map_distance_test_3() {
+        let lines = [".....", ".....", ".####", ".....", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((0, 3), (4, 2)), Some(9));
+    }
+
+    #[test]
+    fn map_distance_test_4() {
+        let lines = [".....", ".....", ".####", ".....", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((0, 3), (0, 3)), Some(0));
+    }
+
+    #[test]
+    fn map_distance_test_5() {
+        let lines = [".....", ".....", ".####", "####.", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((3, 2), (0, 3)), None);
+    }
+
+    #[test]
+    fn map_distance_test_6() {
+        let lines = [".....", ".....", ".####", "####.", "....."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.distance((0, 0), (2, 4)), None);
     }
 }
