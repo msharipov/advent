@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use ndarray::Array2;
 use thiserror::Error;
@@ -29,9 +29,18 @@ impl TryFrom<char> for Tile {
     }
 }
 
+type MarkerTable = HashMap<u8, (usize, usize)>;
+
 #[derive(Debug, PartialEq)]
 pub struct Map {
     tiles: Array2<Tile>,
+    markers: MarkerTable,
+}
+
+#[derive(Debug, PartialEq, Error)]
+#[error("duplicate markers: {marker}")]
+pub struct DuplicateMarkerError {
+    marker: u8,
 }
 
 #[derive(Debug, PartialEq, Error)]
@@ -40,16 +49,33 @@ pub enum ParseMapError {
     TileError(#[from] ParseTileError),
     #[error("line #{line_number} has different length")]
     ShapeError { line_number: usize },
+    #[error("duplicate markers")]
+    DuplicateMarker(#[from] DuplicateMarkerError),
 }
 
 impl Map {
-    pub fn new(tiles: Array2<Tile>) -> Map {
-        Map { tiles }
+    fn marker_map(tiles: &Array2<Tile>) -> Result<MarkerTable, DuplicateMarkerError> {
+        let mut map = MarkerTable::new();
+        for (i, tile) in tiles.indexed_iter() {
+            if let Tile::Marker(number) = tile {
+                if map.contains_key(number) {
+                    return Err(DuplicateMarkerError { marker: *number });
+                } else {
+                    map.insert(*number, i);
+                }
+            }
+        }
+        Ok(map)
+    }
+
+    pub fn new(tiles: Array2<Tile>) -> Result<Map, DuplicateMarkerError> {
+        let markers = Map::marker_map(&tiles)?;
+        Ok(Map { tiles, markers })
     }
 
     pub fn parse_map(lines: &[&str]) -> Result<Map, ParseMapError> {
         if lines.is_empty() {
-            return Ok(Map::new(Array2::from_elem((0, 0), Tile::Floor)));
+            return Ok(Map::new(Array2::from_elem((0, 0), Tile::Floor)).unwrap());
         }
         let width = lines[0].len();
         let mut map = vec![];
@@ -61,9 +87,8 @@ impl Map {
                 map.push(c.try_into()?);
             }
         }
-        Ok(Map::new(
-            Array2::from_shape_vec((lines.len(), width), map).unwrap(),
-        ))
+        let map = Map::new(Array2::from_shape_vec((lines.len(), width), map).unwrap())?;
+        Ok(map)
     }
 
     fn neighbors(&self, (y, x): (usize, usize)) -> Vec<(usize, usize)> {
@@ -144,7 +169,8 @@ mod tests {
             [Wall, Floor, Floor, Floor, Marker(2)],
             [Floor, Floor, Marker(3), Wall, Wall],
             [Wall, Floor, Wall, Floor, Wall]
-        ]);
+        ])
+        .unwrap();
         assert_eq!(Map::parse_map(&lines), Ok(correct));
     }
 
