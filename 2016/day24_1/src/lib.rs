@@ -185,6 +185,17 @@ mod tests {
 
     #[test]
     fn parse_map_test_3() {
+        let lines = ["#...2", "..3##", "#.#2#"];
+        assert_eq!(
+            Map::parse_map(&lines),
+            Err(ParseMapError::DuplicateMarker(DuplicateMarkerError {
+                marker: 2
+            }))
+        );
+    }
+
+    #[test]
+    fn parse_map_test_4() {
         let lines = ["#...2", "..3##", "#,#.#"];
         assert_eq!(
             Map::parse_map(&lines),
