@@ -204,6 +204,19 @@ mod tests {
     }
 
     #[test]
+    fn marker_map_test_1() {
+        use Tile::*;
+        let map = Map::new(array![
+            [Wall, Floor, Floor, Floor, Marker(2)],
+            [Floor, Floor, Marker(3), Wall, Wall],
+            [Wall, Floor, Wall, Floor, Wall]
+        ])
+        .unwrap();
+        let correct = MarkerTable::from_iter([(2, (0, 4)), (3, (1, 2))]);
+        assert_eq!(map.markers, correct);
+    }
+
+    #[test]
     fn map_distance_test_1() {
         let lines = [".....", ".....", ".....", ".....", "....."];
         let map = Map::parse_map(&lines).unwrap();
