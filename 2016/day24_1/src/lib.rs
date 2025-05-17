@@ -116,7 +116,7 @@ impl Map {
             return None;
         }
         let mut step: usize = 0;
-        let mut horizon: HashSet<_> = HashSet::from_iter([pt1]);
+        let mut horizon = HashSet::from_iter([pt1]);
         let mut explored = horizon.clone();
         loop {
             if horizon.is_empty() {
