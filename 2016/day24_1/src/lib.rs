@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use itertools::Itertools;
 use ndarray::Array2;
 use thiserror::Error;
 
@@ -111,12 +112,12 @@ impl Map {
         valid_neighbors
     }
 
-    fn distance(&self, pt1: (usize, usize), pt2: (usize, usize)) -> Option<usize> {
-        if matches!(self.tiles[pt1], Tile::Wall) || matches!(self.tiles[pt2], Tile::Wall) {
+    fn distance(&self, pt1: &(usize, usize), pt2: &(usize, usize)) -> Option<usize> {
+        if matches!(self.tiles[*pt1], Tile::Wall) || matches!(self.tiles[*pt2], Tile::Wall) {
             return None;
         }
         let mut step: usize = 0;
-        let mut horizon = HashSet::from_iter([pt1]);
+        let mut horizon = HashSet::from_iter([*pt1]);
         let mut explored = horizon.clone();
         loop {
             if horizon.is_empty() {
@@ -139,6 +140,22 @@ impl Map {
             }
             horizon = new_horizon;
         }
+    }
+
+    fn distance_map(&self) -> HashMap<(u8, u8), usize> {
+        let markers_vec: Vec<_> = self.markers.keys().cloned().collect();
+        let mut distances = HashMap::new();
+        for pair in markers_vec.iter().permutations(2) {
+            let a = pair[0];
+            let b = pair[1];
+            let pos_a = self.markers.get(a).unwrap();
+            let pos_b = self.markers.get(b).unwrap();
+            if let Some(dist) = self.distance(pos_a, pos_b) {
+                distances.insert((*a, *b), dist);
+                distances.insert((*b, *a), dist);
+            }
+        }
+        distances
     }
 }
 
@@ -220,41 +237,56 @@ mod tests {
     fn map_distance_test_1() {
         let lines = [".....", ".....", ".....", ".....", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((0, 1), (4, 4)), Some(7));
+        assert_eq!(map.distance(&(0, 1), &(4, 4)), Some(7));
     }
 
     #[test]
     fn map_distance_test_2() {
         let lines = [".....", ".....", "#####", ".....", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((0, 1), (4, 4)), None);
+        assert_eq!(map.distance(&(0, 1), &(4, 4)), None);
     }
 
     #[test]
     fn map_distance_test_3() {
         let lines = [".....", ".....", ".####", ".....", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((0, 3), (4, 2)), Some(9));
+        assert_eq!(map.distance(&(0, 3), &(4, 2)), Some(9));
     }
 
     #[test]
     fn map_distance_test_4() {
         let lines = [".....", ".....", ".####", ".....", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((0, 3), (0, 3)), Some(0));
+        assert_eq!(map.distance(&(0, 3), &(0, 3)), Some(0));
     }
 
     #[test]
     fn map_distance_test_5() {
         let lines = [".....", ".....", ".####", "####.", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((3, 2), (0, 3)), None);
+        assert_eq!(map.distance(&(3, 2), &(0, 3)), None);
     }
 
     #[test]
     fn map_distance_test_6() {
         let lines = [".....", ".....", ".####", "####.", "....."];
         let map = Map::parse_map(&lines).unwrap();
-        assert_eq!(map.distance((0, 0), (2, 4)), None);
+        assert_eq!(map.distance(&(0, 0), &(2, 4)), None);
+    }
+
+    #[test]
+    fn distance_map_test_1() {
+        let lines = ["2....", "....4", ".####", ".....", "...7."];
+        let map = Map::parse_map(&lines).unwrap();
+        let correct = HashMap::from_iter([
+            ((2, 4), 5),
+            ((4, 2), 5),
+            ((2, 7), 7),
+            ((7, 2), 7),
+            ((4, 7), 10),
+            ((7, 4), 10),
+        ]);
+        assert_eq!(correct, map.distance_map());
     }
 }
