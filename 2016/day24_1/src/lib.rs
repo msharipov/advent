@@ -157,6 +157,17 @@ impl Map {
         }
         distances
     }
+
+    fn path_len(&self, path: &[u8], map: HashMap<(u8, u8), usize>) -> Option<usize> {
+        if path.is_empty() {
+            return None;
+        }
+        let mut total = 0;
+        for leg in path.windows(2) {
+            total += map.get(&(leg[0], leg[1]))?;
+        }
+        Some(total)
+    }
 }
 
 #[cfg(test)]
@@ -288,5 +299,29 @@ mod tests {
             ((7, 4), 10),
         ]);
         assert_eq!(correct, map.distance_map());
+    }
+
+    #[test]
+    fn path_len_test_1() {
+        let lines = [".1..3", "##.##", "...##", ".####", "...5."];
+        let map = Map::parse_map(&lines).unwrap();
+        let path = [3, 5, 1];
+        assert_eq!(map.path_len(&path, map.distance_map()), Some(21));
+    }
+
+    #[test]
+    fn path_len_test_2() {
+        let lines = [".1..3", "##.##", "...##", ".####", "...5."];
+        let map = Map::parse_map(&lines).unwrap();
+        let path = [];
+        assert_eq!(map.path_len(&path, map.distance_map()), None);
+    }
+
+    #[test]
+    fn path_len_test_3() {
+        let lines = [".1..3", "##.##", ".#.##", ".####", "...5."];
+        let map = Map::parse_map(&lines).unwrap();
+        let path = [3, 5, 1];
+        assert_eq!(map.path_len(&path, map.distance_map()), None);
     }
 }
