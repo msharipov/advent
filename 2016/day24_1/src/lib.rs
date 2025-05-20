@@ -158,7 +158,7 @@ impl Map {
         distances
     }
 
-    fn path_len(&self, path: &[u8], map: HashMap<(u8, u8), usize>) -> Option<usize> {
+    fn path_len(&self, path: &[u8], map: &HashMap<(u8, u8), usize>) -> Option<usize> {
         if path.is_empty() {
             return None;
         }
@@ -167,6 +167,22 @@ impl Map {
             total += map.get(&(leg[0], leg[1]))?;
         }
         Some(total)
+    }
+
+    pub fn shortest_trip_length(&self, start: u8) -> Option<usize> {
+        let mut markers_vec: Vec<_> = self.markers.keys().cloned().collect();
+        let start_index = markers_vec.iter().position(|&m| m == start)?;
+        markers_vec.remove(start_index);
+        let map = self.distance_map();
+        markers_vec
+            .iter()
+            .permutations(markers_vec.len())
+            .flat_map(|tail| {
+                let mut path = vec![&start];
+                path.extend_from_slice(&tail);
+                self.path_len(&path.into_iter().cloned().collect_vec(), &map)
+            })
+            .min()
     }
 }
 
@@ -306,7 +322,7 @@ mod tests {
         let lines = [".1..3", "##.##", "...##", ".####", "...5."];
         let map = Map::parse_map(&lines).unwrap();
         let path = [3, 5, 1];
-        assert_eq!(map.path_len(&path, map.distance_map()), Some(21));
+        assert_eq!(map.path_len(&path, &map.distance_map()), Some(21));
     }
 
     #[test]
@@ -314,7 +330,7 @@ mod tests {
         let lines = [".1..3", "##.##", "...##", ".####", "...5."];
         let map = Map::parse_map(&lines).unwrap();
         let path = [];
-        assert_eq!(map.path_len(&path, map.distance_map()), None);
+        assert_eq!(map.path_len(&path, &map.distance_map()), None);
     }
 
     #[test]
@@ -322,6 +338,20 @@ mod tests {
         let lines = [".1..3", "##.##", ".#.##", ".####", "...5."];
         let map = Map::parse_map(&lines).unwrap();
         let path = [3, 5, 1];
-        assert_eq!(map.path_len(&path, map.distance_map()), None);
+        assert_eq!(map.path_len(&path, &map.distance_map()), None);
+    }
+
+    #[test]
+    fn shortest_trip_length_test_1() {
+        let lines = [".1..3", "##.##", "...##", ".####", "...5."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.shortest_trip_length(2), None);
+    }
+
+    #[test]
+    fn shortest_trip_length_test_2() {
+        let lines = [".1..3", "##.##", "...##", ".####", "...5."];
+        let map = Map::parse_map(&lines).unwrap();
+        assert_eq!(map.shortest_trip_length(5), Some(13));
     }
 }
