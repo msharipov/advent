@@ -133,7 +133,7 @@ impl Map {
                 for neighbor in neighbors {
                     if !explored.contains(&neighbor) && !matches!(self.tiles[neighbor], Tile::Wall)
                     {
-                        new_horizon.insert(neighbor.clone());
+                        new_horizon.insert(neighbor);
                         explored.insert(neighbor);
                     }
                 }
