@@ -123,7 +123,7 @@ impl Map {
             if horizon.is_empty() {
                 return None;
             }
-            if horizon.contains(&pt2) {
+            if horizon.contains(pt2) {
                 return Some(step);
             }
             step += 1;
