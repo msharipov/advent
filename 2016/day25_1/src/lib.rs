@@ -64,6 +64,13 @@ impl FromStr for Instruction {
         if let Ok((val, jump_len)) = sscanf!(s, "jnz {i64} {i64}") {
             return Ok(Instruction::Jnz(Operand::Value(val), jump_len));
         }
+        if let Ok(reg) = sscanf!(s, "out {:/a|b|c|d/}", &str) {
+            let reg = reg.parse::<Register>()?;
+            return Ok(Instruction::Out(Operand::Reg(reg)));
+        }
+        if let Ok(val) = sscanf!(s, "out {i64}") {
+            return Ok(Instruction::Out(Operand::Value(val)));
+        }
         Err(Self::Err::MatchFailed)
     }
 }
@@ -222,6 +229,8 @@ mod tests {
             "inc c",
             "jnz a -19",
             "jnz 5 12",
+            "out d",
+            "out 17",
         ];
         let correct = vec![
             Cpy(Operand::Reg(Register::B), Register::A),
@@ -230,6 +239,8 @@ mod tests {
             Inc(Register::C),
             Jnz(Operand::Reg(Register::A), -19),
             Jnz(Operand::Value(5), 12),
+            Out(Operand::Reg(Register::D)),
+            Out(Operand::Value(17)),
         ];
         assert_eq!(parse_instructions(&lines).unwrap(), correct);
     }
