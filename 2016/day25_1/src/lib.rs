@@ -34,6 +34,7 @@ pub enum Instruction {
     Inc(Register),
     Dec(Register),
     Jnz(Operand, i64),
+    Out(Operand),
 }
 
 impl FromStr for Instruction {
@@ -84,6 +85,7 @@ pub struct Computer {
     rb: i64,
     rc: i64,
     rd: i64,
+    output: Vec<i64>,
 }
 
 impl Computer {
@@ -95,6 +97,7 @@ impl Computer {
             rc: 0,
             rd: 0,
             instructions: instructions.to_vec(),
+            output: vec![],
         }
     }
 
@@ -151,6 +154,15 @@ impl Computer {
         }
     }
 
+    fn out(&mut self, op: Operand) {
+        let val = match op {
+            Operand::Value(val) => val,
+            Operand::Reg(reg) => self.read_reg(reg),
+        };
+        self.output.push(val);
+        self.iar += 1;
+    }
+
     pub fn next_step(&mut self) -> Result<(), Halt> {
         use Instruction::*;
         if self.iar < 0 {
@@ -171,6 +183,9 @@ impl Computer {
                     }
                     Jnz(cond, jump_len) => {
                         self.jnz(*cond, *jump_len);
+                    }
+                    Out(op) => {
+                        self.out(*op);
                     }
                 }
                 Ok(())
@@ -296,6 +311,18 @@ mod tests {
         assert_eq!(comp.iar, 0);
         comp.jnz(Operand::Value(11), 14);
         assert_eq!(comp.iar, 14);
+    }
+
+    #[test]
+    fn out_test_1() {
+        let mut comp = Computer::new(&[]);
+        assert_eq!(comp.output, []);
+        comp.set_reg(Register::C, 14);
+        comp.set_reg(Register::A, -22);
+        comp.out(Operand::Reg(Register::C));
+        comp.out(Operand::Reg(Register::A));
+        comp.out(Operand::Value(10));
+        assert_eq!(comp.output, [14, -22, 10]);
     }
 
     #[test]
