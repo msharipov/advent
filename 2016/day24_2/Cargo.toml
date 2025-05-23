@@ -1,0 +1,9 @@
+[package]
+name = "day24_2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+itertools = "0.14.0"
+ndarray = "0.16.1"
+thiserror = "2.0.12"
