@@ -203,6 +203,14 @@ impl Computer {
     pub fn run(&mut self) {
         while self.next_step().is_ok() {}
     }
+
+    pub fn run_to_line(&mut self, line: i64) {
+        while self.iar != line {
+            if self.next_step().is_err() {
+                break;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -348,5 +356,19 @@ mod tests {
         assert_eq!(comp.read_reg(Register::B), 10);
         assert_eq!(comp.read_reg(Register::C), 20);
         assert_eq!(comp.read_reg(Register::D), 30);
+    }
+
+    #[test]
+    fn run_to_line_test_1() {
+        let instructions = [
+            "cpy 10 a", "inc b", "inc c", "inc c", "inc d", "inc d", "inc d", "dec a", "jnz a -7",
+        ];
+        let instructions = parse_instructions(&instructions).unwrap();
+        let mut comp = Computer::new(&instructions);
+        comp.run_to_line(4);
+        assert_eq!(comp.read_reg(Register::A), 10);
+        assert_eq!(comp.read_reg(Register::B), 1);
+        assert_eq!(comp.read_reg(Register::C), 2);
+        assert_eq!(comp.read_reg(Register::D), 0);
     }
 }
