@@ -213,6 +213,30 @@ impl Computer {
     }
 }
 
+pub fn first_valid_a_value(instructions: &[Instruction]) -> Option<i64> {
+    let mut a_init = 1;
+    let out_index = instructions
+        .iter()
+        .position(|inst| matches!(inst, Instruction::Out(_)))? as i64;
+    const PATTERN: [i64; 10] = [0, 1, 0, 1, 0, 1, 0, 1, 0, 1];
+    'outer: while a_init < i64::MAX {
+        let mut comp = Computer::new(instructions);
+        comp.set_reg(Register::A, a_init);
+        while comp.output.len() < PATTERN.len() {
+            comp.run_to_line(out_index);
+            let _ = comp.next_step();
+            if comp.output.last().expect("out should always emit a signal")
+                != &PATTERN[comp.output.len() - 1]
+            {
+                a_init += 1;
+                continue 'outer;
+            }
+        }
+        return Some(a_init);
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -370,5 +394,14 @@ mod tests {
         assert_eq!(comp.read_reg(Register::B), 1);
         assert_eq!(comp.read_reg(Register::C), 2);
         assert_eq!(comp.read_reg(Register::D), 0);
+    }
+
+    #[test]
+    fn first_valid_a_value_test_1() {
+        let instructions = [
+            "dec a", "dec a", "dec a", "out a", "jnz a -2", "inc a", "jnz 1 -3",
+        ];
+        let instructions = parse_instructions(&instructions).unwrap();
+        assert_eq!(first_valid_a_value(&instructions), Some(3));
     }
 }
