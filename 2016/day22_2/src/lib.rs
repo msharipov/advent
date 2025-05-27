@@ -33,6 +33,7 @@ struct Move {
 pub struct Grid {
     used: Array2<u32>,
     available: Array2<u32>,
+    data: (usize, usize),
 }
 
 impl Grid {
@@ -57,7 +58,11 @@ impl Grid {
                 available[(y, x)] = node.size - node.used;
             }
         }
-        Ok(Grid { used, available })
+        Ok(Grid {
+            used,
+            available,
+            data: (0, max_x),
+        })
     }
 
     fn possible_moves(&self) -> Vec<Move> {
@@ -187,6 +192,7 @@ mod tests {
         let correct = Grid {
             used: correct_used,
             available: correct_available,
+            data: (0, 1),
         };
         assert_eq!(correct, Grid::new(&nodes).unwrap());
     }
@@ -195,7 +201,11 @@ mod tests {
     fn grid_possible_moves_test_1() {
         let used = array![[0, 4, 5], [4, 2, 7]];
         let available = array![[10, 3, 6], [1, 5, 2]];
-        let grid = Grid { used, available };
+        let grid = Grid {
+            used,
+            available,
+            data: (0, 2),
+        };
         let correct_moves = [
             Move {
                 from: (0, 1),
