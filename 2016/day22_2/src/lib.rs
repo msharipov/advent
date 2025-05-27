@@ -24,6 +24,12 @@ impl FromStr for Node {
 }
 
 #[derive(Debug, PartialEq)]
+struct Move {
+    from: (usize, usize),
+    to: (usize, usize),
+}
+
+#[derive(Debug, PartialEq)]
 pub struct Grid {
     used: Array2<u32>,
     available: Array2<u32>,
@@ -52,6 +58,46 @@ impl Grid {
             }
         }
         Ok(Grid { used, available })
+    }
+
+    fn possible_moves(&self) -> Vec<Move> {
+        let mut moves = vec![];
+        let dim = self.used.dim();
+        let max_y = dim.0 - 1;
+        let max_x = dim.1 - 1;
+        for y in 0..=max_y {
+            for x in 0..=max_x {
+                let used = self.used[(y, x)];
+                if used == 0 {
+                    continue;
+                }
+                if x > 0 && self.available[(y, x - 1)] >= used {
+                    moves.push(Move {
+                        from: (y, x),
+                        to: (y, x - 1),
+                    });
+                }
+                if y > 0 && self.available[(y - 1, x)] >= used {
+                    moves.push(Move {
+                        from: (y, x),
+                        to: (y - 1, x),
+                    });
+                }
+                if x < max_x && self.available[(y, x + 1)] >= used {
+                    moves.push(Move {
+                        from: (y, x),
+                        to: (y, x + 1),
+                    });
+                }
+                if y < max_y && self.available[(y + 1, x)] >= used {
+                    moves.push(Move {
+                        from: (y, x),
+                        to: (y + 1, x),
+                    });
+                }
+            }
+        }
+        moves
     }
 }
 
@@ -143,5 +189,43 @@ mod tests {
             available: correct_available,
         };
         assert_eq!(correct, Grid::new(&nodes).unwrap());
+    }
+
+    #[test]
+    fn grid_possible_moves_test_1() {
+        let used = array![[0, 4, 5], [4, 2, 7]];
+        let available = array![[10, 3, 6], [1, 5, 2]];
+        let grid = Grid { used, available };
+        let correct_moves = [
+            Move {
+                from: (0, 1),
+                to: (0, 0),
+            },
+            Move {
+                from: (0, 1),
+                to: (0, 2),
+            },
+            Move {
+                from: (0, 1),
+                to: (1, 1),
+            },
+            Move {
+                from: (1, 0),
+                to: (0, 0),
+            },
+            Move {
+                from: (1, 0),
+                to: (1, 1),
+            },
+            Move {
+                from: (1, 1),
+                to: (0, 1),
+            },
+            Move {
+                from: (1, 1),
+                to: (1, 2),
+            },
+        ];
+        assert_eq!(grid.possible_moves(), correct_moves);
     }
 }
