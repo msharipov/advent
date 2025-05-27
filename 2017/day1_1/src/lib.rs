@@ -2,7 +2,7 @@ pub fn captcha_solution(captcha: &str) -> Result<i64, &str> {
     let digits: Result<_, _> = captcha
         .chars()
         .map(|c| match c {
-            '0'..='9' => Ok(c as u8 - '0' as u8),
+            '0'..='9' => Ok(c as u8 - b'0'),
             _ => Err("invalid character"),
         })
         .collect();
