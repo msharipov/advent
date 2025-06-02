@@ -4,7 +4,7 @@ fn max_minus_min(list: &[i64]) -> Option<i64> {
     Some(list.iter().max()? - list.iter().min()?)
 }
 
-fn parse_lines(lines: &[&str]) -> Result<Vec<Vec<i64>>, ParseIntError> {
+pub fn parse_lines(lines: &[&str]) -> Result<Vec<Vec<i64>>, ParseIntError> {
     let mut vecs = vec![];
     for line in lines {
         vecs.push(
@@ -14,6 +14,10 @@ fn parse_lines(lines: &[&str]) -> Result<Vec<Vec<i64>>, ParseIntError> {
         );
     }
     Ok(vecs)
+}
+
+pub fn compute_checksum(numbers: &[Vec<i64>]) -> Option<i64> {
+    numbers.iter().map(|vec| max_minus_min(vec)).sum()
 }
 
 #[cfg(test)]
@@ -46,5 +50,26 @@ mod tests {
     fn parse_lines_test_2() {
         let lines = ["12 34 56 78", "1 2 c 4567 890"];
         assert!(parse_lines(&lines).is_err());
+    }
+
+    #[test]
+    fn compute_checksum_test_1() {
+        let numbers = [
+            vec![-43, 56, -123, 74, 153, 90, 25],
+            vec![56, 14, -45, 100, 40, 431, -59],
+            vec![504],
+        ];
+        assert_eq!(compute_checksum(&numbers), Some(276 + 490));
+    }
+
+    #[test]
+    fn compute_checksum_test_2() {
+        let numbers = [
+            vec![-43, 56, -123, 74, 153, 90, 25],
+            vec![],
+            vec![56, 14, -45, 100, 40, 431, -59],
+            vec![504],
+        ];
+        assert_eq!(compute_checksum(&numbers), None);
     }
 }
