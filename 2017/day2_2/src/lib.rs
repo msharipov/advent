@@ -29,6 +29,16 @@ fn evenly_divisible_pair(list: &[i64]) -> Option<(i64, i64)> {
     Some((*divisible_pair[0], *divisible_pair[1]))
 }
 
+pub fn compute_checksum_2(numbers: &[Vec<i64>]) -> Option<i64> {
+    numbers
+        .iter()
+        .map(|vec| {
+            let pair = evenly_divisible_pair(vec)?;
+            Some(pair.0 / pair.1)
+        })
+        .sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -93,5 +103,27 @@ mod tests {
     #[test]
     fn evenly_divisible_pair_test_2() {
         assert_eq!(evenly_divisible_pair(&[13, 22, 10, 15, 4, 17, 27]), None);
+    }
+
+    #[test]
+    fn compute_checksum_2_test_1() {
+        let numbers = [vec![11, 5, 64, 12, 20, 19, 28]];
+        assert_eq!(compute_checksum_2(&numbers), Some(4));
+    }
+
+    #[test]
+    fn compute_checksum_2_test_2() {
+        let numbers = [vec![11, 5, 64, 12, 20, 19, 28], vec![103, 10, 24, 8, 89]];
+        assert_eq!(compute_checksum_2(&numbers), Some(7));
+    }
+
+    #[test]
+    fn compute_checksum_3_test_2() {
+        let numbers = [
+            vec![11, 5, 64, 12, 20, 19, 28],
+            vec![103, 10, 24, 8, 89],
+            vec![45],
+        ];
+        assert_eq!(compute_checksum_2(&numbers), None);
     }
 }
