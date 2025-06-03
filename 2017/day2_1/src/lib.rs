@@ -8,7 +8,7 @@ pub fn parse_lines(lines: &[&str]) -> Result<Vec<Vec<i64>>, ParseIntError> {
     let mut vecs = vec![];
     for line in lines {
         vecs.push(
-            line.split(' ')
+            line.split([' ', '\t'])
                 .map(|num| num.parse())
                 .collect::<Result<Vec<_>, ParseIntError>>()?,
         );
@@ -41,7 +41,7 @@ mod tests {
 
     #[test]
     fn parse_lines_test_1() {
-        let lines = ["12 34 56 78", "1 2 3 4567 890"];
+        let lines = ["12 34 56 78", "1 2 3\t4567 890"];
         let correct = vec![vec![12, 34, 56, 78], vec![1, 2, 3, 4567, 890]];
         assert_eq!(parse_lines(&lines), Ok(correct));
     }
