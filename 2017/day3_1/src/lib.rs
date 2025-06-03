@@ -46,6 +46,10 @@ fn offset(number: NonZeroU64) -> Offset {
     }
 }
 
+pub fn manhattan_distance(pt1: &Offset, pt2: &Offset) -> usize {
+    (pt1.right.abs_diff(pt2.right) + pt1.up.abs_diff(pt2.up)) as usize
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -78,5 +82,36 @@ mod tests {
     #[test]
     fn offset_test_6() {
         assert_eq!(offset(24.try_into().unwrap()), Offset { right: 1, up: -2 });
+    }
+
+    #[test]
+    fn manhattan_distance_test_1() {
+        assert_eq!(
+            manhattan_distance(
+                &Offset {
+                    right: -75,
+                    up: -75
+                },
+                &Offset {
+                    right: -75,
+                    up: -75
+                }
+            ),
+            0
+        );
+    }
+
+    #[test]
+    fn manhattan_distance_test_2() {
+        assert_eq!(
+            manhattan_distance(
+                &Offset { right: 35, up: 120 },
+                &Offset {
+                    right: -51,
+                    up: -20
+                }
+            ),
+            226
+        );
     }
 }
