@@ -2,11 +2,11 @@ use std::num::NonZeroU64;
 
 #[derive(Debug, PartialEq)]
 pub struct Offset {
-    right: i64,
-    up: i64,
+    pub right: i64,
+    pub up: i64,
 }
 
-fn offset(number: NonZeroU64) -> Offset {
+pub fn offset(number: NonZeroU64) -> Offset {
     let number: u64 = number.into();
     if number == 1 {
         return Offset { right: 0, up: 0 };
