@@ -13,7 +13,9 @@ fn letter_counts(word: &str) -> BTreeMap<char, usize> {
 
 pub fn validate_passphrase(passphrase: &str) -> bool {
     let mut found_words = HashSet::new();
-    passphrase.split(' ').all(|word| found_words.insert(word))
+    passphrase
+        .split(' ')
+        .all(|word| found_words.insert(letter_counts(word)))
 }
 
 #[cfg(test)]
@@ -38,6 +40,21 @@ mod tests {
     #[test]
     fn validate_passphrase_test_4() {
         assert!(validate_passphrase("aa bb cc AA dd ee ff"));
+    }
+
+    #[test]
+    fn validate_passphrase_test_5() {
+        assert!(!validate_passphrase("aba bba cc baa dd ee ff"));
+    }
+
+    #[test]
+    fn validate_passphrase_test_6() {
+        assert!(validate_passphrase("ABCD bb cc abcd dd ee ff"));
+    }
+
+    #[test]
+    fn validate_passphrase_test_7() {
+        assert!(!validate_passphrase("abcadc bb cc cdabca dd ee ff"));
     }
 
     #[test]
