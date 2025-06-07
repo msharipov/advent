@@ -5,6 +5,7 @@ pub fn parse_jumps(lines: &[&str]) -> Result<Vec<i64>, ParseIntError> {
 }
 
 pub fn jumps_to_exit(jumps: &[i64]) -> usize {
+    let mut jumps = jumps.to_owned();
     let mut position: i64 = 0;
     let mut count = 0;
     let len = jumps.len() as i64;
@@ -12,7 +13,9 @@ pub fn jumps_to_exit(jumps: &[i64]) -> usize {
         if position >= len || position < 0 {
             return count;
         }
-        position += jumps[position as usize] + 1;
+        let old_position = position;
+        position += jumps[position as usize];
+        jumps[old_position as usize] += 1;
         count += 1;
     }
 }
@@ -36,16 +39,16 @@ mod tests {
 
     #[test]
     fn jumps_to_exit_test_2() {
-        assert_eq!(jumps_to_exit(&[0, 0, 0, 0]), 4);
+        assert_eq!(jumps_to_exit(&[0, 0, 0, 0]), 8);
     }
 
     #[test]
     fn jumps_to_exit_test_3() {
-        assert_eq!(jumps_to_exit(&[1, 3, 2, -6, 0, 4]), 3);
+        assert_eq!(jumps_to_exit(&[1, 3, 2, -6, 0, -11]), 5);
     }
 
     #[test]
     fn jumps_to_exit_test_4() {
-        assert_eq!(jumps_to_exit(&[4, -3, 0, -3, 5, -4]), 5);
+        assert_eq!(jumps_to_exit(&[3, -3, 0, -3, -4]), 5);
     }
 }
