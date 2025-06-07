@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use day5_1::{jumps_to_exit, parse_jumps};
+use day5_2::{jumps_to_exit, parse_jumps};
 
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");
