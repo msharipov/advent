@@ -1,14 +1,9 @@
 use std::collections::{BTreeMap, HashSet};
 
+use itertools::Itertools;
+
 fn letter_counts(word: &str) -> BTreeMap<char, usize> {
-    let mut counts = BTreeMap::new();
-    for c in word.chars() {
-        match counts.remove(&c) {
-            None => counts.insert(c, 1),
-            Some(old) => counts.insert(c, old + 1),
-        };
-    }
-    counts
+    BTreeMap::from_iter(word.chars().counts())
 }
 
 pub fn validate_passphrase(passphrase: &str) -> bool {
