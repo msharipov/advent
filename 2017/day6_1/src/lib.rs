@@ -31,6 +31,17 @@ impl FromStr for Memory {
     }
 }
 
+impl Memory {
+    fn bank_with_most_blocks(&self) -> usize {
+        self.banks
+            .iter()
+            .enumerate()
+            .max_by(|(i1, x1), (i2, x2)| if x1 == x2 { i2.cmp(i1) } else { x1.cmp(x2) })
+            .unwrap()
+            .0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::num::IntErrorKind;
@@ -76,5 +87,19 @@ mod tests {
         } else {
             false
         })
+    }
+
+    #[test]
+    fn bank_with_most_blocks_test_1() {
+        let mem = Memory { banks: [0; 16] };
+        assert_eq!(mem.bank_with_most_blocks(), 0)
+    }
+
+    #[test]
+    fn bank_with_most_blocks_test_2() {
+        let mem = Memory {
+            banks: [10, 1, 11, 5, 4, 15, 1, 4, 14, 7, 7, 15, 12, 3, 10, 2],
+        };
+        assert_eq!(mem.bank_with_most_blocks(), 5)
     }
 }
