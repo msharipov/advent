@@ -33,12 +33,8 @@ impl FromStr for Memory {
 
 impl Memory {
     fn bank_with_most_blocks(&self) -> usize {
-        self.banks
-            .iter()
-            .enumerate()
-            .max_by(|(i1, x1), (i2, x2)| if x1 == x2 { i2.cmp(i1) } else { x1.cmp(x2) })
-            .unwrap()
-            .0
+        let max_blocks = self.banks.iter().max().unwrap();
+        self.banks.iter().position(|x| x == max_blocks).unwrap()
     }
 }
 
