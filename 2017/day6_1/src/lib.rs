@@ -36,6 +36,19 @@ impl Memory {
         let max_blocks = self.banks.iter().max().unwrap();
         self.banks.iter().position(|x| x == max_blocks).unwrap()
     }
+
+    pub fn redistribute(&self) -> Self {
+        let mut current_bank = self.bank_with_most_blocks();
+        let mut blocks_left = self.banks[current_bank];
+        let mut new_banks = self.banks;
+        new_banks[current_bank] = 0;
+        while blocks_left > 0 {
+            current_bank = (current_bank + 1) % 16;
+            new_banks[current_bank] += 1;
+            blocks_left -= 1;
+        }
+        Memory { banks: new_banks }
+    }
 }
 
 #[cfg(test)]
@@ -97,5 +110,33 @@ mod tests {
             banks: [10, 1, 11, 5, 4, 15, 1, 4, 14, 7, 7, 15, 12, 3, 10, 2],
         };
         assert_eq!(mem.bank_with_most_blocks(), 5)
+    }
+
+    #[test]
+    fn redistribute_test_1() {
+        let mem = Memory { banks: [0; 16] };
+        assert_eq!(mem.redistribute(), mem);
+    }
+
+    #[test]
+    fn redistribute_test_2() {
+        let mem = Memory { banks: [25; 16] };
+        let correct = Memory {
+            banks: [
+                1, 27, 27, 27, 27, 27, 27, 27, 27, 27, 26, 26, 26, 26, 26, 26,
+            ],
+        };
+        assert_eq!(mem.redistribute(), correct);
+    }
+
+    #[test]
+    fn redistribute_test_3() {
+        let mem = Memory {
+            banks: [12, 9, 2, 2, 17, 10, 4, 22, 10, 1, 15, 16, 0, 22, 7, 11],
+        };
+        let correct = Memory {
+            banks: [13, 10, 3, 3, 18, 11, 5, 1, 12, 3, 17, 18, 2, 24, 8, 12],
+        };
+        assert_eq!(mem.redistribute(), correct);
     }
 }
