@@ -1,8 +1,8 @@
-use std::{num::ParseIntError, str::FromStr};
+use std::{collections::HashSet, num::ParseIntError, str::FromStr};
 
 use thiserror::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Hash, Eq, Clone)]
 pub struct Memory {
     banks: [u64; 16],
 }
@@ -48,6 +48,17 @@ impl Memory {
             blocks_left -= 1;
         }
         Memory { banks: new_banks }
+    }
+
+    pub fn cycle_period(&self) -> usize {
+        let mut count = 1;
+        let mut explored: HashSet<_> = HashSet::from_iter([self.clone()]);
+        let mut current = self.redistribute();
+        while explored.insert(current.clone()) {
+            count += 1;
+            current = current.redistribute();
+        }
+        count
     }
 }
 
@@ -138,5 +149,27 @@ mod tests {
             banks: [13, 10, 3, 3, 18, 11, 5, 1, 12, 3, 17, 18, 2, 24, 8, 12],
         };
         assert_eq!(mem.redistribute(), correct);
+    }
+
+    #[test]
+    fn cycle_period_test_1() {
+        let mem = Memory { banks: [0; 16] };
+        assert_eq!(mem.cycle_period(), 1);
+    }
+
+    #[test]
+    fn cycle_period_test_2() {
+        let mem = Memory {
+            banks: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        };
+        assert_eq!(mem.cycle_period(), 16);
+    }
+
+    #[test]
+    fn cycle_period_test_3() {
+        let mem = Memory {
+            banks: [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        };
+        assert_eq!(mem.cycle_period(), 7 + 16 + 16);
     }
 }
