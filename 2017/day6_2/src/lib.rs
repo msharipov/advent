@@ -51,9 +51,15 @@ impl Memory {
     }
 
     pub fn cycle_period(&self) -> usize {
-        let mut count = 1;
+        let mut explored: HashSet<_> = HashSet::from_iter([self.clone()]);
         let mut current = self.redistribute();
-        while &current != self {
+        while explored.insert(current.clone()) {
+            current = current.redistribute();
+        }
+        let loop_endpoint = current.clone();
+        let mut count = 1;
+        current = current.redistribute();
+        while current != loop_endpoint {
             count += 1;
             current = current.redistribute();
         }
@@ -167,7 +173,7 @@ mod tests {
     #[test]
     fn cycle_period_test_3() {
         let mem = Memory {
-            banks: [0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            banks: [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         };
         assert_eq!(mem.cycle_period(), 16);
     }
