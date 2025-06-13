@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use day6_1::Memory;
+use day6_2::Memory;
 
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");
