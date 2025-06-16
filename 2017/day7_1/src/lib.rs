@@ -16,6 +16,10 @@ impl Node {
             children: children.iter().map(|&s| s.to_owned()).collect(),
         }
     }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
+    }
 }
 
 #[derive(Debug, PartialEq)]
