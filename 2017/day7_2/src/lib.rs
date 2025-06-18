@@ -1,8 +1,5 @@
 use sscanf::sscanf;
-use std::{
-    collections::{HashMap, HashSet},
-    str::FromStr,
-};
+use std::{collections::HashSet, str::FromStr};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct ParsedNode {
@@ -62,6 +59,42 @@ pub fn bottom_node(nodes: &[ParsedNode]) -> Option<&ParsedNode> {
         }
     }
     nodes.iter().find(|n| !all_children.contains(&n.name))
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Node {
+    name: String,
+    weight: u64,
+    children: Vec<Node>,
+}
+
+#[derive(Debug, PartialEq)]
+pub enum NodeError {
+    NoRootNode,
+    NodeMissing(String),
+}
+
+impl Node {
+    fn create_node(parsed: &[ParsedNode], name: &str) -> Result<Self, NodeError> {
+        let current = parsed
+            .iter()
+            .find(|n| n.name == name)
+            .ok_or(NodeError::NodeMissing(name.to_owned()))?;
+        let mut children = vec![];
+        for child in &current.children {
+            children.push(Node::create_node(parsed, child)?);
+        }
+        Ok(Node {
+            name: current.name.to_owned(),
+            weight: current.weight,
+            children,
+        })
+    }
+
+    pub fn new(parsed: &[ParsedNode]) -> Result<Self, NodeError> {
+        let parent = bottom_node(parsed).ok_or(NodeError::NoRootNode)?;
+        Node::create_node(parsed, &parent.name)
+    }
 }
 
 /*
@@ -173,6 +206,70 @@ mod tests {
         assert_eq!(bottom_node(&nodes), None);
     }
 
+    #[test]
+    fn node_new_test_1() {
+        let nodes = [
+            "abc (1)",
+            "def (5) -> abc, mno",
+            "ghi (4) -> def, jkl",
+            "jkl (2) -> pqr",
+            "mno (85)",
+            "pqr (10)",
+        ];
+        let nodes: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let correct = Node {
+            name: "ghi".to_owned(),
+            weight: 4,
+            children: vec![
+                Node {
+                    name: "def".to_owned(),
+                    weight: 5,
+                    children: vec![
+                        Node {
+                            name: "abc".to_owned(),
+                            weight: 1,
+                            children: vec![],
+                        },
+                        Node {
+                            name: "mno".to_owned(),
+                            weight: 85,
+                            children: vec![],
+                        },
+                    ],
+                },
+                Node {
+                    name: "jkl".to_owned(),
+                    weight: 2,
+                    children: vec![Node {
+                        name: "pqr".to_owned(),
+                        weight: 10,
+                        children: vec![],
+                    }],
+                },
+            ],
+        };
+        assert_eq!(Node::new(&nodes), Ok(correct));
+    }
+
+    #[test]
+    fn node_new_test_2() {
+        let nodes = [
+            "abc (1)",
+            "def (5) -> abc, mno",
+            "ghi (4) -> def, jkl",
+            "jkl (2) -> pqr",
+            "mno (85)",
+            "pqr (10) -> ghi",
+        ];
+        let nodes: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        assert_eq!(Node::new(&nodes), Err(NodeError::NoRootNode))
+    }
     /*
     #[test]
     fn unbalanced_child_test_1() {
