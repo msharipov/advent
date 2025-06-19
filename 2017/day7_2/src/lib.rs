@@ -65,6 +65,7 @@ pub fn bottom_node(nodes: &[ParsedNode]) -> Option<&ParsedNode> {
 pub struct Node {
     name: String,
     weight: u64,
+    total_weight: u64,
     children: Vec<Node>,
 }
 
@@ -81,12 +82,16 @@ impl Node {
             .find(|n| n.name == name)
             .ok_or(NodeError::NodeMissing(name.to_owned()))?;
         let mut children = vec![];
+        let mut total_weight = current.weight;
         for child in &current.children {
-            children.push(Node::create_node(parsed, child)?);
+            let child_node = Node::create_node(parsed, child)?;
+            total_weight += child_node.total_weight;
+            children.push(child_node);
         }
         Ok(Node {
             name: current.name.to_owned(),
             weight: current.weight,
+            total_weight,
             children,
         })
     }
@@ -223,19 +228,23 @@ mod tests {
         let correct = Node {
             name: "ghi".to_owned(),
             weight: 4,
+            total_weight: 107,
             children: vec![
                 Node {
                     name: "def".to_owned(),
                     weight: 5,
+                    total_weight: 91,
                     children: vec![
                         Node {
                             name: "abc".to_owned(),
                             weight: 1,
+                            total_weight: 1,
                             children: vec![],
                         },
                         Node {
                             name: "mno".to_owned(),
                             weight: 85,
+                            total_weight: 85,
                             children: vec![],
                         },
                     ],
@@ -243,9 +252,11 @@ mod tests {
                 Node {
                     name: "jkl".to_owned(),
                     weight: 2,
+                    total_weight: 12,
                     children: vec![Node {
                         name: "pqr".to_owned(),
                         weight: 10,
+                        total_weight: 10,
                         children: vec![],
                     }],
                 },
