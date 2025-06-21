@@ -61,7 +61,7 @@ pub fn bottom_node(nodes: &[ParsedNode]) -> Option<&ParsedNode> {
     nodes.iter().find(|n| !all_children.contains(&n.name))
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Node {
     name: String,
     weight: u64,
@@ -102,22 +102,16 @@ impl Node {
     }
 }
 
-/*
-pub fn unbalanced_child(nodes: &HashMap<String, Node>, parent: &str) -> Option<String> {
-    let parent = nodes.get(parent)?;
-    let mut children = vec![];
+pub fn unbalanced_child(parent: &Node) -> Option<&Node> {
+    let total_weight: u64 = parent.children.iter().map(|child| child.total_weight).sum();
+    let child_count = parent.children.len();
     for node in &parent.children {
-        children.push(nodes.get(node)?);
-    }
-    let total_weight: u64 = children.iter().map(|child| child.weight).sum();
-    for node in children {
-        if node.weight * 3 != total_weight {
-            return unbalanced_child(nodes, &node.name).or(Some(node.name.to_owned()));
+        if node.total_weight * child_count as u64 != total_weight {
+            return unbalanced_child(node).or(Some(node));
         }
     }
     None
 }
-*/
 
 #[cfg(test)]
 mod tests {
@@ -281,7 +275,7 @@ mod tests {
             .collect();
         assert_eq!(Node::new(&nodes), Err(NodeError::NoRootNode))
     }
-    /*
+
     #[test]
     fn unbalanced_child_test_1() {
         let nodes = [
@@ -292,13 +286,12 @@ mod tests {
             "ghi (12)",
             "jkl (12)",
         ];
-        let nodes: HashMap<String, Node> = HashMap::from_iter(
-            nodes
-                .iter()
-                .map(|n| n.parse::<Node>().unwrap())
-                .map(|n| (n.name.to_owned(), n)),
-        );
-        assert_eq!(unbalanced_child(&nodes, "abc"), None);
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(unbalanced_child(&node_tree), None);
     }
 
     #[test]
@@ -311,13 +304,19 @@ mod tests {
             "ghi (12)",
             "jkl (12)",
         ];
-        let nodes: HashMap<String, Node> = HashMap::from_iter(
-            nodes
-                .iter()
-                .map(|n| n.parse::<Node>().unwrap())
-                .map(|n| (n.name.to_owned(), n)),
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(
+            unbalanced_child(&node_tree),
+            Some(&Node {
+                name: "mno".to_owned(),
+                weight: 1,
+                total_weight: 1,
+                children: vec![],
+            })
         );
-        assert_eq!(unbalanced_child(&nodes, "abc"), None);
     }
-    */
 }
