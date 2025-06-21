@@ -100,17 +100,17 @@ impl Node {
         let parent = bottom_node(parsed).ok_or(NodeError::NoRootNode)?;
         Node::create_node(parsed, &parent.name)
     }
-}
 
-pub fn unbalanced_child(parent: &Node) -> Option<&Node> {
-    let total_weight: u64 = parent.children.iter().map(|child| child.total_weight).sum();
-    let child_count = parent.children.len();
-    for node in &parent.children {
-        if node.total_weight * child_count as u64 != total_weight {
-            return unbalanced_child(node).or(Some(node));
+    pub fn unbalanced_child(&self) -> Option<&Node> {
+        let total_weight: u64 = self.children.iter().map(|child| child.total_weight).sum();
+        let child_count = self.children.len();
+        for node in &self.children {
+            if node.total_weight * child_count as u64 != total_weight {
+                return node.unbalanced_child().or(Some(node));
+            }
         }
+        None
     }
-    None
 }
 
 #[cfg(test)]
@@ -291,7 +291,7 @@ mod tests {
             .map(|n| n.parse::<ParsedNode>().unwrap())
             .collect();
         let node_tree = Node::new(&nodes_vec).unwrap();
-        assert_eq!(unbalanced_child(&node_tree), None);
+        assert_eq!(node_tree.unbalanced_child(), None);
     }
 
     #[test]
@@ -310,7 +310,7 @@ mod tests {
             .collect();
         let node_tree = Node::new(&nodes_vec).unwrap();
         assert_eq!(
-            unbalanced_child(&node_tree),
+            node_tree.unbalanced_child(),
             Some(&Node {
                 name: "mno".to_owned(),
                 weight: 1,
