@@ -111,6 +111,16 @@ impl Node {
         }
         None
     }
+
+    pub fn find_parent(&self, name: &str) -> Option<&Node> {
+        if self.children.iter().any(|child| child.name == name) {
+            return Some(self);
+        }
+        self.children
+            .iter()
+            .flat_map(|child| child.find_parent(name))
+            .next()
+    }
 }
 
 #[cfg(test)]
@@ -318,5 +328,59 @@ mod tests {
                 children: vec![],
             })
         );
+    }
+
+    #[test]
+    fn node_find_parent_test_1() {
+        let nodes = [
+            "abc (34) -> def, ghi, jkl",
+            "def (8) -> mno, pqr",
+            "mno (2)",
+            "pqr (2)",
+            "ghi (12)",
+            "jkl (12)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(node_tree.find_parent("abc"), None);
+    }
+
+    #[test]
+    fn node_find_parent_test_2() {
+        let nodes = [
+            "abc (34) -> def, ghi, jkl",
+            "def (8) -> mno, pqr",
+            "mno (2)",
+            "pqr (2)",
+            "ghi (12)",
+            "jkl (12)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(node_tree.find_parent("jkl"), Some(&node_tree));
+    }
+
+    #[test]
+    fn node_find_parent_test_3() {
+        let nodes = [
+            "abc (34) -> def, ghi, jkl",
+            "def (8) -> mno, pqr",
+            "mno (2)",
+            "pqr (2)",
+            "ghi (12)",
+            "jkl (12)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(node_tree.find_parent("mno"), Some(&node_tree.children[0]));
     }
 }
