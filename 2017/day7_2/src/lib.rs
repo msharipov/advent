@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use sscanf::sscanf;
 use std::{collections::HashSet, str::FromStr};
 
@@ -102,14 +103,24 @@ impl Node {
     }
 
     pub fn unbalanced_child(&self) -> Option<&Node> {
-        let total_weight: u64 = self.children.iter().map(|child| child.total_weight).sum();
         let child_count = self.children.len();
-        for node in &self.children {
-            if node.total_weight * child_count as u64 != total_weight {
-                return node.unbalanced_child().or(Some(node));
-            }
+        if child_count <= 1 {
+            return None;
         }
-        None
+        let counts = self.children.iter().counts_by(|child| child.total_weight);
+        if counts.len() == 1 {
+            return None;
+        }
+        if counts.len() != 2 {
+            panic!("more than two weight groups");
+        }
+        if child_count == 2 {
+            panic!("equal number of towers with different weights")
+        }
+        let (weight, _) = counts.iter().find(|(_, count)| **count == 1)?;
+        self.children
+            .iter()
+            .find(|child| child.total_weight == *weight)
     }
 
     pub fn find_parent(&self, name: &str) -> Option<&Node> {
@@ -309,8 +320,8 @@ mod tests {
         let nodes = [
             "abc (34) -> def, ghi, jkl",
             "def (8) -> mno, pqr",
-            "mno (1)",
-            "pqr (2)",
+            "mno (2)",
+            "pqr (1)",
             "ghi (12)",
             "jkl (12)",
         ];
@@ -322,10 +333,23 @@ mod tests {
         assert_eq!(
             node_tree.unbalanced_child(),
             Some(&Node {
-                name: "mno".to_owned(),
-                weight: 1,
-                total_weight: 1,
-                children: vec![],
+                name: "def".to_owned(),
+                weight: 8,
+                total_weight: 11,
+                children: vec![
+                    Node {
+                        name: "mno".to_owned(),
+                        weight: 2,
+                        total_weight: 2,
+                        children: vec![],
+                    },
+                    Node {
+                        name: "pqr".to_owned(),
+                        weight: 1,
+                        total_weight: 1,
+                        children: vec![],
+                    },
+                ],
             })
         );
     }
