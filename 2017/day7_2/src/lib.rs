@@ -117,10 +117,10 @@ impl Node {
         if child_count == 2 {
             panic!("equal number of towers with different weights")
         }
-        let (weight, _) = counts.iter().find(|(_, count)| **count == 1)?;
+        let (weight, _) = counts.into_iter().find(|(_, count)| *count == 1)?;
         self.children
             .iter()
-            .find(|child| child.total_weight == *weight)
+            .find(|child| child.total_weight == weight)
     }
 
     pub fn find_parent(&self, name: &str) -> Option<&Node> {
