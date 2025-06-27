@@ -355,6 +355,43 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "equal number of towers with different weights")]
+    fn unbalanced_child_test_3() {
+        let nodes = [
+            "abc (34) -> def, ghi",
+            "def (8) -> mno, pqr",
+            "mno (2)",
+            "pqr (2)",
+            "ghi (11)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        node_tree.unbalanced_child();
+    }
+
+    #[test]
+    #[should_panic(expected = "more than two weight groups")]
+    fn unbalanced_child_test_4() {
+        let nodes = [
+            "abc (34) -> def, ghi, jkl",
+            "def (8) -> mno, pqr",
+            "mno (2)",
+            "pqr (1)",
+            "ghi (9)",
+            "jkl (13)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        node_tree.unbalanced_child();
+    }
+
+    #[test]
     fn node_find_parent_test_1() {
         let nodes = [
             "abc (34) -> def, ghi, jkl",
