@@ -127,8 +127,9 @@ impl Node {
         let child = self.unbalanced_child()?;
         if child.unbalanced_child().is_none() {
             let counts = self.children.iter().counts_by(|child| child.total_weight);
-            let weight = counts.into_iter().find(|(_, count)| *count != 1).unwrap().0;
-            Some(weight)
+            let correct_weight = counts.into_iter().find(|(_, count)| *count != 1).unwrap().0;
+            let diff = correct_weight as i64 - child.total_weight as i64;
+            Some((child.weight as i64 + diff) as u64)
         } else {
             child.incorrect_node_target_weight()
         }
@@ -509,5 +510,23 @@ mod tests {
             .collect();
         let node_tree = Node::new(&nodes_vec).unwrap();
         assert_eq!(node_tree.incorrect_node_target_weight(), Some(2));
+    }
+
+    #[test]
+    fn node_incorrect_node_target_weight_test_4() {
+        let nodes = [
+            "abc (34) -> def, ghi, jkl",
+            "def (4) -> mno, pqr",
+            "mno (2)",
+            "pqr (2)",
+            "ghi (12)",
+            "jkl (12)",
+        ];
+        let nodes_vec: Vec<_> = nodes
+            .iter()
+            .map(|n| n.parse::<ParsedNode>().unwrap())
+            .collect();
+        let node_tree = Node::new(&nodes_vec).unwrap();
+        assert_eq!(node_tree.incorrect_node_target_weight(), Some(8));
     }
 }
