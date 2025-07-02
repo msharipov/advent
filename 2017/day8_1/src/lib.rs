@@ -74,4 +74,74 @@ mod tests {
             }
         )
     }
+
+    #[test]
+    fn instruction_from_str_test_2() {
+        assert_eq!(
+            "abc dec -50 if def != 22".parse::<Instruction>().unwrap(),
+            Instruction {
+                reg: "abc".to_owned(),
+                change: 50,
+                cond_reg: "def".to_owned(),
+                cond: Comparison::NotEqual,
+                cond_value: 22,
+            }
+        )
+    }
+
+    #[test]
+    fn instruction_from_str_test_3() {
+        assert_eq!(
+            "abc inc 55 if def > 0".parse::<Instruction>().unwrap(),
+            Instruction {
+                reg: "abc".to_owned(),
+                change: 55,
+                cond_reg: "def".to_owned(),
+                cond: Comparison::Greater,
+                cond_value: 0,
+            }
+        )
+    }
+
+    #[test]
+    fn instruction_from_str_test_4() {
+        assert_eq!(
+            "abc dec 29 if def >= -85".parse::<Instruction>().unwrap(),
+            Instruction {
+                reg: "abc".to_owned(),
+                change: -29,
+                cond_reg: "def".to_owned(),
+                cond: Comparison::GreaterOrEqual,
+                cond_value: -85,
+            }
+        )
+    }
+
+    #[test]
+    fn instruction_from_str_test_5() {
+        assert_eq!(
+            "abc inc 31 if def < 130".parse::<Instruction>().unwrap(),
+            Instruction {
+                reg: "abc".to_owned(),
+                change: 31,
+                cond_reg: "def".to_owned(),
+                cond: Comparison::Less,
+                cond_value: 130,
+            }
+        )
+    }
+
+    #[test]
+    fn instruction_from_str_test_6() {
+        assert_eq!(
+            "abc inc 31 if def <= 77".parse::<Instruction>().unwrap(),
+            Instruction {
+                reg: "abc".to_owned(),
+                change: 31,
+                cond_reg: "def".to_owned(),
+                cond: Comparison::LessOrEqual,
+                cond_value: 77,
+            }
+        )
+    }
 }
