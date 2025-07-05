@@ -1,5 +1,5 @@
 use sscanf::sscanf;
-use std::str::FromStr;
+use std::{collections::HashMap, ops::AddAssign, str::FromStr};
 
 #[derive(Debug, PartialEq)]
 pub enum Comparison {
@@ -54,6 +54,34 @@ impl FromStr for Instruction {
             cond,
             cond_value,
         })
+    }
+}
+
+#[derive(Debug, PartialEq, Default)]
+pub struct State {
+    vars: HashMap<String, i64>,
+}
+
+impl State {
+    pub fn apply(&mut self, inst: &Instruction) {
+        if !self.vars.contains_key(&inst.reg) {
+            self.vars.insert(inst.reg.to_owned(), 0);
+        }
+        let cond_reg_value = self.vars.get(&inst.cond_reg).unwrap_or(&0);
+        let execute = match inst.cond {
+            Comparison::Equal => cond_reg_value == &inst.cond_value,
+            Comparison::NotEqual => cond_reg_value != &inst.cond_value,
+            Comparison::Less => cond_reg_value < &inst.cond_value,
+            Comparison::LessOrEqual => cond_reg_value <= &inst.cond_value,
+            Comparison::Greater => cond_reg_value > &inst.cond_value,
+            Comparison::GreaterOrEqual => cond_reg_value >= &inst.cond_value,
+        };
+        if execute {
+            self.vars
+                .get_mut(&inst.reg)
+                .unwrap()
+                .add_assign(&inst.change);
+        }
     }
 }
 
@@ -143,5 +171,68 @@ mod tests {
                 cond_value: 77,
             }
         )
+    }
+
+    #[test]
+    fn state_apply_test_1() {
+        let mut state = State::default();
+        state.apply(&Instruction {
+            reg: "abc".to_owned(),
+            change: 13,
+            cond_reg: "def".to_owned(),
+            cond: Comparison::Greater,
+            cond_value: -5,
+        });
+        state.apply(&Instruction {
+            reg: "qwe".to_owned(),
+            change: -6,
+            cond_reg: "abc".to_owned(),
+            cond: Comparison::Greater,
+            cond_value: 3,
+        });
+        state.apply(&Instruction {
+            reg: "abc".to_owned(),
+            change: -15,
+            cond_reg: "qwe".to_owned(),
+            cond: Comparison::Equal,
+            cond_value: -6,
+        });
+        state.apply(&Instruction {
+            reg: "abc".to_owned(),
+            change: 11,
+            cond_reg: "abc".to_owned(),
+            cond: Comparison::NotEqual,
+            cond_value: -2,
+        });
+        state.apply(&Instruction {
+            reg: "xyz".to_owned(),
+            change: 10,
+            cond_reg: "ghj".to_owned(),
+            cond: Comparison::Less,
+            cond_value: 1,
+        });
+        state.apply(&Instruction {
+            reg: "qwe".to_owned(),
+            change: 5,
+            cond_reg: "xyz".to_owned(),
+            cond: Comparison::GreaterOrEqual,
+            cond_value: 10,
+        });
+        state.apply(&Instruction {
+            reg: "tyu".to_owned(),
+            change: -25,
+            cond_reg: "abc".to_owned(),
+            cond: Comparison::LessOrEqual,
+            cond_value: -2,
+        });
+        let correct = State {
+            vars: HashMap::from_iter([
+                ("abc".to_owned(), -2),
+                ("qwe".to_owned(), -1),
+                ("xyz".to_owned(), 10),
+                ("tyu".to_owned(), -25),
+            ]),
+        };
+        assert_eq!(correct, state);
     }
 }
