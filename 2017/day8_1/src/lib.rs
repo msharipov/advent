@@ -83,6 +83,10 @@ impl State {
                 .add_assign(&inst.change);
         }
     }
+
+    pub fn max_register(&self) -> Option<String> {
+        Some(self.vars.iter().max_by(|x, y| x.1.cmp(y.1))?.0.to_owned())
+    }
 }
 
 #[cfg(test)]
@@ -234,5 +238,18 @@ mod tests {
             ]),
         };
         assert_eq!(correct, state);
+    }
+
+    #[test]
+    fn state_max_register_test_1() {
+        let state = State {
+            vars: HashMap::from_iter([
+                ("abc".to_owned(), -12),
+                ("def".to_owned(), 45),
+                ("ghi".to_owned(), 2),
+                ("jkl".to_owned(), -8),
+            ]),
+        };
+        assert_eq!(state.max_register(), Some("def".to_owned()))
     }
 }
