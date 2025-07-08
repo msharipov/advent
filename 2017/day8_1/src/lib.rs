@@ -87,6 +87,10 @@ impl State {
     pub fn max_register(&self) -> Option<String> {
         Some(self.vars.iter().max_by(|x, y| x.1.cmp(y.1))?.0.to_owned())
     }
+
+    pub fn read(&self, reg: &str) -> Option<&i64> {
+        self.vars.get(reg)
+    }
 }
 
 #[cfg(test)]
