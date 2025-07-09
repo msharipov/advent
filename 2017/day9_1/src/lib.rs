@@ -12,7 +12,7 @@ pub enum GroupPart {
 #[error("failed to parse group")]
 pub struct GroupParseError();
 
-fn parse_garbage(s: &str) -> Result<GroupPart, GroupParseError> {
+fn parse_garbage(s: &str) -> Result<usize, GroupParseError> {
     let chars: Vec<_> = s.chars().collect();
     let len = chars.len();
     if chars[0] != '<' || len < 2 {
@@ -39,10 +39,7 @@ fn parse_garbage(s: &str) -> Result<GroupPart, GroupParseError> {
             _ => {}
         }
     }
-    if current_index != len - 1 {
-        return Err(GroupParseError());
-    }
-    Ok(GroupPart::Garbage)
+    Ok(current_index + 1)
 }
 
 impl FromStr for GroupPart {
@@ -53,10 +50,17 @@ impl FromStr for GroupPart {
             return Err(GroupParseError());
         }
         let chars: Vec<_> = s.chars().collect();
-        if chars[0] == '<' {
-            parse_garbage(s)
-        } else {
-            Err(GroupParseError())
+        match chars[0] {
+            '<' => {
+                let garbage_len = parse_garbage(s)?;
+                if garbage_len != chars.len() {
+                    Err(GroupParseError())
+                } else {
+                    Ok(GroupPart::Garbage)
+                }
+            }
+            '{' => todo!(),
+            _ => Err(GroupParseError()),
         }
     }
 }
