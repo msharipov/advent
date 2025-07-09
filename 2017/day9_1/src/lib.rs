@@ -13,6 +13,9 @@ pub enum GroupPart {
 pub struct GroupParseError();
 
 fn parse_garbage(s: &str) -> Result<usize, GroupParseError> {
+    if s.is_empty() {
+        return Err(GroupParseError());
+    }
     let chars: Vec<_> = s.chars().collect();
     let len = chars.len();
     if chars[0] != '<' || len < 2 {
