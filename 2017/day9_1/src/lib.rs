@@ -74,4 +74,43 @@ mod tests {
     fn grouppart_parse_test_2() {
         assert_eq!("".parse::<GroupPart>(), Err(GroupParseError()));
     }
+
+    #[test]
+    fn grouppart_parse_test_3() {
+        assert_eq!("<aavbcvb1234!@#sdf>".parse(), Ok(GroupPart::Garbage));
+    }
+
+    #[test]
+    fn grouppart_parse_test_4() {
+        assert_eq!("<sasdfasdf!>".parse::<GroupPart>(), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn grouppart_parse_test_5() {
+        assert_eq!("<adfad<fgad<f!>asdfasdf>".parse(), Ok(GroupPart::Garbage));
+    }
+
+    #[test]
+    fn grouppart_parse_test_6() {
+        assert_eq!(
+            "<23405<asdfa!>dasf".parse::<GroupPart>(),
+            Err(GroupParseError())
+        );
+    }
+
+    #[test]
+    fn grouppart_parse_test_7() {
+        assert_eq!(
+            "<23405k<asdf>dsaf>".parse::<GroupPart>(),
+            Err(GroupParseError())
+        );
+    }
+
+    #[test]
+    fn grouppart_parse_test_8() {
+        assert_eq!(
+            "asdfas<drf!><123>".parse::<GroupPart>(),
+            Err(GroupParseError())
+        );
+    }
 }
