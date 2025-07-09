@@ -1,6 +1,6 @@
 use std::fs::read_to_string;
 
-use day8_1::{Instruction, State};
+use day8_2::{Instruction, State};
 
 fn main() {
     let input = read_to_string("input.txt").expect("no input.txt in current directory");
@@ -13,6 +13,6 @@ fn main() {
     for inst in &instructions {
         state.apply(inst);
     }
-    let highest = state.read(&state.max_register().unwrap()).unwrap();
+    let highest = state.highest();
     println!("Highest value: {highest}");
 }

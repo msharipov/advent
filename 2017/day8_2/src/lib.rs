@@ -93,6 +93,10 @@ impl State {
     pub fn read(&self, reg: &str) -> Option<&i64> {
         self.vars.get(reg)
     }
+
+    pub fn highest(&self) -> i64 {
+        self.highest_value
+    }
 }
 
 #[cfg(test)]
