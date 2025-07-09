@@ -70,6 +70,41 @@ mod tests {
     use super::*;
 
     #[test]
+    fn parse_garbage_test_1() {
+        assert_eq!(parse_garbage(""), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_garbage_test_2() {
+        assert_eq!(parse_garbage("<sdfad"), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_garbage_test_3() {
+        assert_eq!(parse_garbage("a123sad<sadf>"), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_garbage_test_4() {
+        assert_eq!(parse_garbage("<sdf!>12mfp"), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_garbage_test_5() {
+        assert_eq!(parse_garbage("<>"), Ok(2));
+    }
+
+    #[test]
+    fn parse_garbage_test_6() {
+        assert_eq!(parse_garbage("<asdfasdf>"), Ok(10));
+    }
+
+    #[test]
+    fn parse_garbage_test_7() {
+        assert_eq!(parse_garbage("<sadfa!>sdf>af23"), Ok(12));
+    }
+
+    #[test]
     fn grouppart_parse_test_1() {
         assert_eq!("<>".parse(), Ok(GroupPart::Garbage));
     }
