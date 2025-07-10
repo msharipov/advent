@@ -45,6 +45,31 @@ fn parse_garbage(s: &str) -> Result<usize, GroupParseError> {
     Ok(current_index + 1)
 }
 
+fn parse_group(s: &str) -> Result<(GroupPart, usize), GroupParseError> {
+    if s.is_empty() {
+        return Err(GroupParseError());
+    }
+    let chars: Vec<_> = s.chars().collect();
+    let len = chars.len();
+    if chars[0] != '{' || len < 2 {
+        return Err(GroupParseError());
+    }
+    let mut current_index: usize = 0;
+    let mut contents = vec![];
+    loop {
+        current_index += 1;
+        if current_index >= len {
+            return Err(GroupParseError());
+        }
+        match chars[current_index] {
+            '}' => {
+                return Ok((GroupPart::Group(contents), current_index + 1));
+            }
+            _ => return Err(GroupParseError()),
+        }
+    }
+}
+
 impl FromStr for GroupPart {
     type Err = GroupParseError;
 
@@ -71,6 +96,26 @@ impl FromStr for GroupPart {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn parse_group_test_1() {
+        assert_eq!(parse_group(""), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_group_test_2() {
+        assert_eq!(parse_group("<asdfasdf>"), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_group_test_3() {
+        assert_eq!(parse_group("{asdfasdfad"), Err(GroupParseError()));
+    }
+
+    #[test]
+    fn parse_group_test_4() {
+        assert_eq!(parse_group("{}"), Ok((GroupPart::Group(vec![]), 2)));
+    }
 
     #[test]
     fn parse_garbage_test_1() {
